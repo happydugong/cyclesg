@@ -10,7 +10,6 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.svg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,json}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true
       }
