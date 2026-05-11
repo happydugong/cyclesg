@@ -1,5 +1,6 @@
 const GA_SCRIPT_ID = 'google-analytics';
 const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() ?? '';
+const isDev = import.meta.env.DEV;
 
 declare global {
   interface Window {
@@ -23,9 +24,10 @@ function ensureGtag() {
     return window.gtag;
   }
 
-  window.gtag = (...args: unknown[]) => {
+  // Match Google's standard gtag bootstrap pattern by queueing commands in dataLayer.
+  window.gtag = function gtag(this: Window, ..._args: unknown[]) {
     ensureDataLayer();
-    window.dataLayer.push(args);
+    window.dataLayer.push(arguments);
   };
 
   return window.gtag;
@@ -49,13 +51,13 @@ export function initializeAnalytics() {
   }
 
   ensureDataLayer();
-  injectAnalyticsScript();
-
   const gtag = ensureGtag();
   gtag('js', new Date());
   gtag('config', measurementId, {
-    send_page_view: false
+    send_page_view: false,
+    debug_mode: isDev
   });
+  injectAnalyticsScript();
 
   initialized = true;
 }
