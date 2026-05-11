@@ -8,6 +8,7 @@ Production-oriented MVP for a Singapore cycling planner PWA built with React, Ty
 - Live GPS watch using the browser Geolocation API
 - Floating `center on me` control
 - Singapore Park Connector Network GeoJSON overlay from official NParks open data
+- Singapore cycling path GeoJSON overlay from official LTA open data
 - Installable PWA manifest and service worker registration
 - Offline app-shell caching for startup
 - Environment variable support for future map or API configuration
@@ -106,9 +107,13 @@ pnpm preview
 - Basemap style defaults to OpenFreeMap Liberty:
   `https://tiles.openfreemap.org/styles/liberty`
 - PCN data is stored at `src/assets/pcn.geojson`
+- Cycling path data is stored at `src/assets/cycling-paths.geojson`
 - The current file is sourced from NParks on data.gov.sg:
   `https://data.gov.sg/datasets/d_a69ef89737379f231d2ae93fd1c5707f/view`
+- Cycling path data is sourced from LTA on data.gov.sg:
+  `https://data.gov.sg/datasets/d_8f468b25193f64be8a16fa7d8f60f553/view`
 - Dataset title: `Park Connector Loop`
+- Dataset title: `Cycling Path Network (GEOJSON)`
 - Dataset page showed `Last updated: 15 Apr 2026, 10:06 SGT` when fetched for this update
 - The app loads GeoJSON through a small service abstraction so the asset is parsed explicitly instead of imported as executable code.
 
@@ -133,16 +138,8 @@ pnpm sync:pcn
 - Weekly sync is a better default than daily if git is the persistence layer
 - If the file grows substantially or update frequency increases, move the dataset out of git and into a storage bucket or backend cache
 
-## Troubleshooting
+## Feedback
 
-### `Unexpected token ':'` on localhost
-
-This typically means the browser tried to execute raw GeoJSON as JavaScript. The app now loads `src/assets/pcn.geojson` via `fetch` from an asset URL, which fixes that failure mode.
-
-If you still see the old error:
-
-```bash
-pnpm dev
-```
-
-Then hard refresh the page or restart the Vite dev server so the module graph is rebuilt.
+- Feature requests and bug reports go through GitHub Issues:
+  `https://github.com/huishun98/cyclesg/issues`
+- A dedicated feature request template is available in the issue chooser to keep submissions consistent.

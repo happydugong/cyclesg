@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { GeolocationState, UserLocation } from '../types/geolocation';
+import { useCallback, useEffect, useState } from 'react';
+import type { GeolocationController, GeolocationState, UserLocation } from '../types/geolocation';
 
 const DEFAULT_STATE: GeolocationState = {
   status: 'idle',
@@ -20,6 +20,10 @@ function toUserLocation(position: GeolocationPosition): UserLocation {
 
 export function useGeolocation() {
   const [state, setState] = useState<GeolocationState>(DEFAULT_STATE);
+  const [requestVersion, setRequestVersion] = useState(0);
+  const refresh = useCallback(() => {
+    setRequestVersion((current) => current + 1);
+  }, []);
 
   useEffect(() => {
     if (!('geolocation' in navigator)) {
@@ -31,13 +35,15 @@ export function useGeolocation() {
       return;
     }
 
+    const geolocation = navigator.geolocation;
+
     setState((current) => ({
       ...current,
       status: 'requesting',
       errorMessage: null
     }));
 
-    const watchId = navigator.geolocation.watchPosition(
+    const watchId = geolocation.watchPosition(
       (position) => {
         setState({
           status: 'ready',
@@ -48,7 +54,7 @@ export function useGeolocation() {
       (error) => {
         const errorMessage =
           error.code === error.PERMISSION_DENIED
-            ? 'Location permission was denied. Enable GPS access to center the map on your ride.'
+            ? 'Location permission was denied. Turn on location access, then try again.'
             : 'Unable to read your GPS position right now. Please try again outdoors or with stronger signal.';
 
         setState((current) => ({
@@ -65,9 +71,12 @@ export function useGeolocation() {
     );
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
+      geolocation.clearWatch(watchId);
     };
-  }, []);
+  }, [requestVersion]);
 
-  return state;
+  return {
+    ...state,
+    refresh
+  } satisfies GeolocationController;
 }

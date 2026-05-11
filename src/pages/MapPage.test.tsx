@@ -65,7 +65,8 @@ describe('MapPage', () => {
     vi.mocked(useGeolocation).mockReturnValue({
       status: 'requesting',
       location: null,
-      errorMessage: null
+      errorMessage: null,
+      refresh: vi.fn()
     });
 
     render(<MapPage />);
@@ -76,6 +77,9 @@ describe('MapPage', () => {
     await waitFor(() => {
       expect(screen.getByText('CycleSG')).toBeInTheDocument();
     });
+
+    expect(screen.queryByRole('link', { name: /hui shun/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /open source/i })).not.toBeInTheDocument();
   });
 
   it('shows a permission error and enables recenter when GPS is available', async () => {
@@ -89,7 +93,8 @@ describe('MapPage', () => {
         speed: null,
         timestamp: 100
       },
-      errorMessage: 'Location permission was denied.'
+      errorMessage: 'Location permission was denied.',
+      refresh: vi.fn()
     });
 
     render(<MapPage />);

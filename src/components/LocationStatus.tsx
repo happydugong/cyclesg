@@ -1,7 +1,7 @@
-import type { GeolocationState } from '../types/geolocation';
+import type { GeolocationController } from '../types/geolocation';
 
 interface LocationStatusProps {
-  state: GeolocationState;
+  state: GeolocationController;
 }
 
 export function LocationStatus({ state }: LocationStatusProps) {
@@ -21,7 +21,16 @@ export function LocationStatus({ state }: LocationStatusProps) {
             <span>Finding your GPS location…</span>
           </div>
         ) : (
-          <p>{state.errorMessage}</p>
+          <div className="flex items-center gap-3">
+            <p className="flex-1">{state.errorMessage}</p>
+            <button
+              type="button"
+              onClick={state.refresh}
+              className="pointer-events-auto shrink-0 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
+            >
+              Retry
+            </button>
+          </div>
         )}
       </div>
     </div>

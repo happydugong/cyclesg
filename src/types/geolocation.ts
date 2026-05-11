@@ -14,3 +14,7 @@ export interface GeolocationState {
   location: UserLocation | null;
   errorMessage: string | null;
 }
+
+export interface GeolocationController extends GeolocationState {
+  refresh: () => void;
+}

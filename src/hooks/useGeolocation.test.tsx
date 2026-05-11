@@ -156,4 +156,42 @@ describe('useGeolocation', () => {
     unmount();
     expect(clearWatch).toHaveBeenCalledWith(3);
   });
+
+  it('restarts geolocation watching when refresh is called', async () => {
+    const clearWatch = vi.fn();
+    const watchPosition = vi
+      .fn<(
+        onSuccess: PositionCallback,
+        onError?: PositionErrorCallback,
+        options?: PositionOptions
+      ) => number>()
+      .mockReturnValueOnce(11)
+      .mockReturnValueOnce(12);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      configurable: true,
+      value: {
+        geolocation: {
+          watchPosition,
+          clearWatch
+        }
+      }
+    });
+
+    const { result } = renderHook(() => useGeolocation());
+
+    await waitFor(() => {
+      expect(watchPosition).toHaveBeenCalledTimes(1);
+    });
+
+    act(() => {
+      result.current.refresh();
+    });
+
+    await waitFor(() => {
+      expect(watchPosition).toHaveBeenCalledTimes(2);
+    });
+
+    expect(clearWatch).toHaveBeenCalledWith(11);
+  });
 });

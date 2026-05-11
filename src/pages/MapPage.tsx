@@ -80,6 +80,8 @@ function normalizeUnifiedRouteProperties(
 }
 
 export function MapPage() {
+  const authorUrl = 'https://huishun98.github.io/';
+  const repositoryUrl = 'https://github.com/huishun98/cyclesg';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
@@ -266,7 +268,7 @@ export function MapPage() {
       ) : null}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start p-4">
-        <div className="rounded-full border border-slate-900/10 bg-white/84 px-4 py-2 text-sm text-slate-700 shadow-floating backdrop-blur-md">
+        <div className="rounded-full border border-white/15 bg-slate-950/55 px-4 py-2 text-sm text-slate-100 shadow-floating backdrop-blur-md">
           CycleSG
         </div>
       </div>
@@ -280,8 +282,16 @@ export function MapPage() {
           <div className="pointer-events-auto mx-auto max-w-md rounded-[28px] border border-slate-900/10 bg-white/90 p-4 text-slate-700 shadow-floating backdrop-blur-md">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">
-                  {displayedRoute.routeType === 'pcn' ? 'Park Connector' : 'Cycling Path'}
+                <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-slate-500">
+                  <span
+                    aria-hidden="true"
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      displayedRoute.routeType === 'pcn' ? 'bg-[#2FA66A]' : 'bg-[#BE93D4]'
+                    }`}
+                  />
+                  <span>
+                    {displayedRoute.routeType === 'pcn' ? 'Park Connector' : 'Cycling Path'}
+                  </span>
                 </p>
                 <h2 className="mt-1 text-base font-semibold text-slate-900">
                   {displayedRoute.routeName}
@@ -307,6 +317,26 @@ export function MapPage() {
                   ? `${Math.round(displayedRoute.routeLength)}m mapped length`
                   : 'Length unavailable'}
               </span>
+            </div>
+            <div className="mt-4 border-t border-slate-200/80 pt-3 text-xs text-slate-500">
+              <span>By </span>
+              <a
+                href={authorUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
+              >
+                Hui Shun
+              </a>
+              <span className="px-2 text-slate-300">•</span>
+              <a
+                href={repositoryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
+              >
+                Open source
+              </a>
             </div>
           </div>
         </div>
