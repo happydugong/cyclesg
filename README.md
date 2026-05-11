@@ -59,6 +59,7 @@ cp .env.example .env.local
 Current variables:
 
 - `VITE_APP_NAME`
+- `VITE_GA_MEASUREMENT_ID`
 - `VITE_MAP_STYLE_URL`
 - `VITE_SINGAPORE_CENTER_LNG`
 - `VITE_SINGAPORE_CENTER_LAT`
@@ -94,6 +95,49 @@ pnpm build
 ```bash
 pnpm preview
 ```
+
+## Google Analytics
+
+This app supports Google Analytics 4 through the global site tag without adding a runtime dependency.
+
+### 1. Create a GA4 web data stream
+
+In Google Analytics:
+
+- Create or open a GA4 property
+- Add a `Web` data stream for your deployed site
+- Copy the `Measurement ID` that looks like `G-XXXXXXXXXX`
+
+### 2. Configure the app
+
+Add the measurement ID to `.env.local`:
+
+```bash
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+If the variable is empty or missing, analytics stays disabled.
+
+### 3. What the app tracks
+
+- Initial SPA `page_view`
+- `select_route` when a route segment is opened
+- `toggle_follow_user` when the follow-my-location control is toggled
+- `overlay_load_error` if route overlay data fails to load
+
+### 4. Verify locally
+
+Run the app with:
+
+```bash
+pnpm dev
+```
+
+Then open the site and confirm requests to `googletagmanager.com` in the browser network tab or use GA4 `DebugView`.
+
+### 5. Deploy
+
+Set `VITE_GA_MEASUREMENT_ID` in your hosting provider's build environment as well, then rebuild the app.
 
 ## PWA notes
 

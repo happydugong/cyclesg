@@ -5,6 +5,7 @@ import { LocationStatus } from '../components/LocationStatus';
 import { MapViewport } from '../components/MapViewport';
 import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { trackEvent } from '../services/analytics/googleAnalytics';
 import { loadCyclingPathGeoJson } from '../services/cyclingPath/cyclingPathService';
 import { createMap, createUserLocationMarker, flyToLocation } from '../services/map/mapService';
 import { loadPcnGeoJson } from '../services/pcn/pcnService';
@@ -123,6 +124,9 @@ export function MapPage() {
   const toggleFollowUser = useCallback(() => {
     setIsFollowingUser((current) => {
       if (current) {
+        trackEvent('toggle_follow_user', {
+          enabled: false
+        });
         return false;
       }
 
@@ -136,6 +140,9 @@ export function MapPage() {
       }
 
       showFollowNotice('Following your location');
+      trackEvent('toggle_follow_user', {
+        enabled: true
+      });
       return true;
     });
   }, [geolocation.location, showFollowNotice]);
@@ -284,6 +291,9 @@ export function MapPage() {
         }
 
         setPcnError('Unable to load Park Connector overlays.');
+        trackEvent('overlay_load_error', {
+          overlay_type: 'pcn'
+        });
       });
 
     return () => {
@@ -309,6 +319,9 @@ export function MapPage() {
         }
 
         setCyclingPathError('Unable to load cycling path overlays.');
+        trackEvent('overlay_load_error', {
+          overlay_type: 'cycling_path'
+        });
       });
 
     return () => {
@@ -347,6 +360,18 @@ export function MapPage() {
       window.clearTimeout(timeoutId);
     };
   }, [displayedRoute, selectedRoute]);
+
+  useEffect(() => {
+    if (!selectedRoute) {
+      return;
+    }
+
+    trackEvent('select_route', {
+      route_id: selectedRoute.routeId,
+      route_type: selectedRoute.routeType,
+      route_name: selectedRoute.routeName
+    });
+  }, [selectedRoute]);
 
   return (
     <main className="relative h-screen overflow-hidden bg-slate-950">
