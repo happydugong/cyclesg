@@ -55,7 +55,7 @@ describe('PcnLayer', () => {
       'pcn-source',
       expect.objectContaining({ type: 'geojson', data: pcnFixture })
     );
-    expect(map.addLayer).toHaveBeenCalledTimes(4);
+    expect(map.addLayer).toHaveBeenCalledTimes(3);
     expect(map.on).toHaveBeenCalledWith('click', 'pcn-route-layer', expect.any(Function));
   });
 

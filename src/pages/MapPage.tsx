@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Marker, Map } from 'maplibre-gl';
 import { CenterOnMeButton } from '../components/CenterOnMeButton';
 import { LocationStatus } from '../components/LocationStatus';
@@ -19,6 +19,9 @@ export function MapPage() {
   const [pcnData, setPcnData] = useState<PcnGeoJson | null>(null);
   const [pcnError, setPcnError] = useState<string | null>(null);
   const [selectedConnector, setSelectedConnector] = useState<PcnProperties | null>(null);
+  const clearSelectedConnector = useCallback(() => {
+    setSelectedConnector(null);
+  }, []);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) {
@@ -87,22 +90,6 @@ export function MapPage() {
     };
   }, []);
 
-  const pcnSummary = useMemo(() => {
-    if (!pcnData) {
-      return null;
-    }
-
-    const loopNames = Array.from(
-      new Set(pcnData.features.map((feature) => feature.properties.PCN_LOOP).filter(Boolean))
-    ).sort((left, right) => left.localeCompare(right));
-
-    return {
-      featureCount: pcnData.features.length,
-      loopCount: loopNames.length,
-      loopNames
-    };
-  }, [pcnData]);
-
   return (
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
@@ -113,19 +100,14 @@ export function MapPage() {
           map={mapRef.current}
           selectedObjectId={selectedConnector?.OBJECTID ?? null}
           onSelect={setSelectedConnector}
-          onClearSelection={() => setSelectedConnector(null)}
+          onClearSelection={clearSelectedConnector}
         />
       ) : null}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-4">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start p-4">
         <div className="rounded-full border border-slate-900/10 bg-white/84 px-4 py-2 text-sm text-slate-700 shadow-floating backdrop-blur-md">
           CycleSG
         </div>
-        {pcnSummary ? (
-          <div className="hidden rounded-full border border-slate-900/10 bg-white/84 px-3 py-2 text-xs text-slate-600 shadow-floating backdrop-blur-md sm:block">
-            {pcnSummary.loopCount} loops
-          </div>
-        ) : null}
       </div>
 
       {selectedConnector ? (
@@ -161,6 +143,7 @@ export function MapPage() {
 
       <CenterOnMeButton
         disabled={!geolocation.location}
+        isRaised={Boolean(selectedConnector)}
         onClick={() => {
           if (mapRef.current && geolocation.location) {
             flyToLocation(

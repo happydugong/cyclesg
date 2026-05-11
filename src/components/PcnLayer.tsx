@@ -11,7 +11,6 @@ import type { PcnGeoJson, PcnProperties } from '../types/pcn';
 const SOURCE_ID = 'pcn-source';
 const OUTLINE_LAYER_ID = 'pcn-outline-layer';
 const ROUTE_LAYER_ID = 'pcn-route-layer';
-const SELECTED_OUTER_LAYER_ID = 'pcn-selected-outer-layer';
 const SELECTED_INNER_LAYER_ID = 'pcn-selected-inner-layer';
 
 interface PcnLayerProps {
@@ -102,8 +101,8 @@ export function PcnLayer({
           },
           paint: {
             'line-color': routeColorExpression,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 5, 15, 10],
-            'line-opacity': 0.18
+            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 6, 15, 12],
+            'line-opacity': 0.24
           }
         });
       }
@@ -119,26 +118,8 @@ export function PcnLayer({
           },
           paint: {
             'line-color': routeColorExpression,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 3, 15, 6],
-            'line-opacity': 0.44
-          }
-        });
-      }
-
-      if (!map.getLayer(SELECTED_OUTER_LAYER_ID)) {
-        map.addLayer({
-          id: SELECTED_OUTER_LAYER_ID,
-          type: 'line',
-          source: SOURCE_ID,
-          filter: ['==', ['get', 'OBJECTID'], -1],
-          layout: {
-            'line-cap': 'round',
-            'line-join': 'round'
-          },
-          paint: {
-            'line-color': '#ffffff',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 7, 15, 12],
-            'line-opacity': 0.96
+            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 4, 15, 7],
+            'line-opacity': 0.58
           }
         });
       }
@@ -154,13 +135,44 @@ export function PcnLayer({
             'line-join': 'round'
           },
           paint: {
-            'line-color': '#0f172a',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 4, 15, 7],
-            'line-opacity': 0.78
+            'line-color': '#374151',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 9, 5.5, 15, 9],
+            'line-opacity': 0.68
           }
         });
       }
     };
+
+    // Style loads asynchronously; this keeps the overlay in sync after reloads and style changes.
+    if (map.isStyleLoaded()) {
+      addLayer();
+    } else {
+      map.once('load', addLayer);
+    }
+
+    return () => {
+      if (map.getLayer(SELECTED_INNER_LAYER_ID)) {
+        map.removeLayer(SELECTED_INNER_LAYER_ID);
+      }
+
+      if (map.getLayer(ROUTE_LAYER_ID)) {
+        map.removeLayer(ROUTE_LAYER_ID);
+      }
+
+      if (map.getLayer(OUTLINE_LAYER_ID)) {
+        map.removeLayer(OUTLINE_LAYER_ID);
+      }
+
+      if (map.getSource(SOURCE_ID)) {
+        map.removeSource(SOURCE_ID);
+      }
+    };
+  }, [data, map, routeColorExpression]);
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
 
     const handleRouteClick = (event: MapLayerMouseEvent) => {
       const feature = event.features?.[0];
@@ -182,27 +194,15 @@ export function PcnLayer({
       map.getCanvas().style.cursor = '';
     };
 
-      const handleMapClick = (event: MapLayerMouseEvent) => {
-        const features = map.queryRenderedFeatures(event.point, {
-          layers: [
-            ROUTE_LAYER_ID,
-            OUTLINE_LAYER_ID,
-            SELECTED_OUTER_LAYER_ID,
-            SELECTED_INNER_LAYER_ID
-          ]
-        });
+    const handleMapClick = (event: MapLayerMouseEvent) => {
+      const features = map.queryRenderedFeatures(event.point, {
+        layers: [ROUTE_LAYER_ID, OUTLINE_LAYER_ID, SELECTED_INNER_LAYER_ID]
+      });
 
-        if (features.length === 0) {
+      if (features.length === 0) {
         onClearSelection();
       }
     };
-
-    // Style loads asynchronously; this keeps the overlay in sync after reloads and style changes.
-    if (map.isStyleLoaded()) {
-      addLayer();
-    } else {
-      map.once('load', addLayer);
-    }
 
     map.on('click', ROUTE_LAYER_ID, handleRouteClick);
     map.on('mouseenter', ROUTE_LAYER_ID, handlePointerEnter);
@@ -214,34 +214,12 @@ export function PcnLayer({
       map.off('mouseenter', ROUTE_LAYER_ID, handlePointerEnter);
       map.off('mouseleave', ROUTE_LAYER_ID, handlePointerLeave);
       map.off('click', handleMapClick);
-
-      if (map.getLayer(SELECTED_INNER_LAYER_ID)) {
-        map.removeLayer(SELECTED_INNER_LAYER_ID);
-      }
-
-      if (map.getLayer(SELECTED_OUTER_LAYER_ID)) {
-        map.removeLayer(SELECTED_OUTER_LAYER_ID);
-      }
-
-      if (map.getLayer(ROUTE_LAYER_ID)) {
-        map.removeLayer(ROUTE_LAYER_ID);
-      }
-
-      if (map.getLayer(OUTLINE_LAYER_ID)) {
-        map.removeLayer(OUTLINE_LAYER_ID);
-      }
-
-      if (map.getSource(SOURCE_ID)) {
-        map.removeSource(SOURCE_ID);
-      }
     };
-  }, [data, map, onClearSelection, onSelect, routeColorExpression]);
+  }, [map, onClearSelection, onSelect]);
 
   useEffect(() => {
     if (
-      !map ||
-      !map.getLayer(SELECTED_OUTER_LAYER_ID) ||
-      !map.getLayer(SELECTED_INNER_LAYER_ID)
+      !map || !map.getLayer(SELECTED_INNER_LAYER_ID)
     ) {
       return;
     }
@@ -251,7 +229,6 @@ export function PcnLayer({
         ? (['==', ['get', 'OBJECTID'], -1] as ExpressionSpecification)
         : (['==', ['get', 'OBJECTID'], selectedObjectId] as ExpressionSpecification);
 
-    map.setFilter(SELECTED_OUTER_LAYER_ID, filter);
     map.setFilter(SELECTED_INNER_LAYER_ID, filter);
   }, [map, selectedObjectId]);
 
