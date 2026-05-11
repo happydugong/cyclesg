@@ -1,4 +1,4 @@
-name: Sync PCN Data
+name: Sync Cycling Data
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  sync-pcn:
+  sync-datasets:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,18 +30,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Sync official NParks PCN dataset
+      - name: Sync official cycling datasets
         run: pnpm sync:pcn
 
       - name: Commit and push changes
         run: |
-          if git diff --quiet -- src/assets/pcn.geojson src/assets/pcn-metadata.json; then
-            echo "No PCN data changes detected."
+          if git diff --quiet -- src/assets/pcn.geojson src/assets/pcn-metadata.json src/assets/cycling-paths.geojson src/assets/cycling-paths-metadata.json; then
+            echo "No cycling data changes detected."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/assets/pcn.geojson src/assets/pcn-metadata.json
-          git commit -m "chore: sync PCN data"
+          git add src/assets/pcn.geojson src/assets/pcn-metadata.json src/assets/cycling-paths.geojson src/assets/cycling-paths-metadata.json
+          git commit -m "chore: sync cycling data"
           git push

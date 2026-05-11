@@ -1,17 +1,31 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-const DATASET_ID = 'd_a69ef89737379f231d2ae93fd1c5707f';
-const DATASET_PAGE_URL = `https://data.gov.sg/datasets/${DATASET_ID}/view`;
-const DOWNLOAD_POLL_URL = `https://api-open.data.gov.sg/v1/public/api/datasets/${DATASET_ID}/poll-download`;
-const OUTPUT_PATH = resolve(process.cwd(), 'src/assets/pcn.geojson');
-const METADATA_PATH = resolve(process.cwd(), 'src/assets/pcn-metadata.json');
 const SINGAPORE_BOUNDS = {
   minLng: 103.58,
   maxLng: 104.1,
   minLat: 1.19,
   maxLat: 1.48
 };
+
+const DATASETS = [
+  {
+    datasetId: 'd_a69ef89737379f231d2ae93fd1c5707f',
+    datasetTitle: 'Park Connector Loop',
+    agency: 'NParks',
+    outputPath: resolve(process.cwd(), 'src/assets/pcn.geojson'),
+    metadataPath: resolve(process.cwd(), 'src/assets/pcn-metadata.json'),
+    minFeatureCount: 100
+  },
+  {
+    datasetId: 'd_8f468b25193f64be8a16fa7d8f60f553',
+    datasetTitle: 'Cycling Path Network (GEOJSON)',
+    agency: 'LTA',
+    outputPath: resolve(process.cwd(), 'src/assets/cycling-paths.geojson'),
+    metadataPath: resolve(process.cwd(), 'src/assets/cycling-paths-metadata.json'),
+    minFeatureCount: 100
+  }
+];
 
 function assert(condition, message) {
   if (!condition) {
@@ -62,10 +76,10 @@ function collectCoordinates(geometry) {
   return [];
 }
 
-function validateFeatureCollection(geoJson) {
+function validateFeatureCollection(geoJson, minFeatureCount) {
   assert(geoJson && geoJson.type === 'FeatureCollection', 'Expected a GeoJSON FeatureCollection.');
   assert(Array.isArray(geoJson.features), 'Expected GeoJSON features to be an array.');
-  assert(geoJson.features.length > 100, 'Feature count is unexpectedly low.');
+  assert(geoJson.features.length >= minFeatureCount, 'Feature count is unexpectedly low.');
 
   let outOfBoundsCount = 0;
 
@@ -90,20 +104,6 @@ function validateFeatureCollection(geoJson) {
   assert(outOfBoundsCount === 0, `Found ${outOfBoundsCount} coordinates outside Singapore bounds.`);
 }
 
-function createMetadata(geoJson) {
-  const timestamp = new Date().toISOString();
-  const featureCount = geoJson.features.length;
-
-  return {
-    datasetId: DATASET_ID,
-    datasetPageUrl: DATASET_PAGE_URL,
-    datasetTitle: 'Park Connector Loop',
-    agency: 'NParks',
-    syncedAt: timestamp,
-    featureCount
-  };
-}
-
 async function writeIfChanged(filePath, contents) {
   let previousContents = null;
 
@@ -123,33 +123,48 @@ async function writeIfChanged(filePath, contents) {
   return true;
 }
 
-async function main() {
-  const pollResult = await fetchJson(DOWNLOAD_POLL_URL);
+async function syncDataset(dataset) {
+  const datasetPageUrl = `https://data.gov.sg/datasets/${dataset.datasetId}/view`;
+  const downloadPollUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${dataset.datasetId}/poll-download`;
+  const pollResult = await fetchJson(downloadPollUrl);
+
   assert(pollResult.code === 0, pollResult.errMsg || 'Download poll failed.');
   assert(pollResult.data?.url, 'Download URL missing from poll response.');
 
   const geoJson = await fetchJson(pollResult.data.url);
-  validateFeatureCollection(geoJson);
+  validateFeatureCollection(geoJson, dataset.minFeatureCount);
 
   const normalizedGeoJson = `${JSON.stringify(geoJson, null, 2)}\n`;
-  const metadata = createMetadata(geoJson);
+  const metadata = {
+    datasetId: dataset.datasetId,
+    datasetPageUrl,
+    datasetTitle: dataset.datasetTitle,
+    agency: dataset.agency,
+    syncedAt: new Date().toISOString(),
+    featureCount: geoJson.features.length
+  };
   const normalizedMetadata = `${JSON.stringify(metadata, null, 2)}\n`;
 
-  const geoJsonChanged = await writeIfChanged(OUTPUT_PATH, normalizedGeoJson);
-  const metadataChanged = await writeIfChanged(METADATA_PATH, normalizedMetadata);
+  const geoJsonChanged = await writeIfChanged(dataset.outputPath, normalizedGeoJson);
+  const metadataChanged = await writeIfChanged(dataset.metadataPath, normalizedMetadata);
 
-  console.log(
-    JSON.stringify(
-      {
-        datasetId: DATASET_ID,
-        featureCount: geoJson.features.length,
-        geoJsonChanged,
-        metadataChanged
-      },
-      null,
-      2
-    )
-  );
+  return {
+    datasetId: dataset.datasetId,
+    datasetTitle: dataset.datasetTitle,
+    featureCount: geoJson.features.length,
+    geoJsonChanged,
+    metadataChanged
+  };
+}
+
+async function main() {
+  const results = [];
+
+  for (const dataset of DATASETS) {
+    results.push(await syncDataset(dataset));
+  }
+
+  console.log(JSON.stringify(results, null, 2));
 }
 
 main().catch((error) => {

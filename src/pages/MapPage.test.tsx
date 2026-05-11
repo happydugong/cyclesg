@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cyclingPathFixture } from '../test/fixtures/cyclingPathFixture';
 import { pcnFixture } from '../test/fixtures/pcnFixture';
 
 const testState = vi.hoisted(() => {
@@ -35,12 +36,16 @@ vi.mock('../services/pcn/pcnService', () => ({
   loadPcnGeoJson: vi.fn(() => Promise.resolve(pcnFixture))
 }));
 
+vi.mock('../services/cyclingPath/cyclingPathService', () => ({
+  loadCyclingPathGeoJson: vi.fn(() => Promise.resolve(cyclingPathFixture))
+}));
+
 vi.mock('../hooks/useGeolocation', () => ({
   useGeolocation: vi.fn()
 }));
 
-vi.mock('../components/PcnLayer', () => ({
-  PcnLayer: () => null
+vi.mock('../components/RouteOverlayLayer', () => ({
+  RouteOverlayLayer: () => null
 }));
 
 const { MapPage } = await import('./MapPage');

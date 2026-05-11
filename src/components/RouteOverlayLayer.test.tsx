@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { PcnLayer } from './PcnLayer';
+import { RouteOverlayLayer } from './RouteOverlayLayer';
 import { pcnFixture } from '../test/fixtures/pcnFixture';
 
 function createMapMock() {
@@ -37,53 +37,88 @@ function createMapMock() {
   };
 }
 
-describe('PcnLayer', () => {
-  it('registers the PCN source and route layers on mount', () => {
+describe('RouteOverlayLayer', () => {
+  const routeLayerProps = {
+    data: pcnFixture,
+    ids: {
+      source: 'routes-source',
+      route: 'routes-route-layer',
+      selected: 'routes-selected-layer',
+      hitArea: 'routes-hit-area-layer'
+    },
+    isFeature: (feature: unknown): feature is never => Boolean(feature),
+    normalizeProperties: <TProperties,>(properties: TProperties) => properties,
+    objectIdKey: 'OBJECTID',
+    onClearSelection: vi.fn(),
+    onSelect: vi.fn(),
+    palette: {
+      routeColor: '#22c55e',
+      selectedColor: '#374151'
+    }
+  };
+
+  it('registers a route source and layers on mount', () => {
     const map = createMapMock();
 
     render(
-      <PcnLayer
-        data={pcnFixture}
+      <RouteOverlayLayer
+        {...routeLayerProps}
         map={map as never}
         selectedObjectId={null}
-        onSelect={vi.fn()}
-        onClearSelection={vi.fn()}
       />
     );
 
     expect(map.addSource).toHaveBeenCalledWith(
-      'pcn-source',
+      'routes-source',
       expect.objectContaining({ type: 'geojson', data: pcnFixture })
     );
     expect(map.addLayer).toHaveBeenCalledTimes(3);
-    expect(map.on).toHaveBeenCalledWith('click', 'pcn-route-layer', expect.any(Function));
+    expect(map.on).toHaveBeenCalledWith('click', 'routes-hit-area-layer', expect.any(Function));
   });
 
-  it('updates the selected route filter when a connector is selected', () => {
+  it('keeps the hit-area layer invisible and wider than the visible route', () => {
+    const map = createMapMock();
+
+    render(
+      <RouteOverlayLayer
+        {...routeLayerProps}
+        map={map as never}
+        selectedObjectId={null}
+      />
+    );
+
+    expect(map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'routes-hit-area-layer',
+        paint: expect.objectContaining({
+          'line-opacity': 0,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 16, 13, 20, 16, 26]
+        })
+      })
+    );
+  });
+
+  it('updates the selected route filter when a route is selected', () => {
     const map = createMapMock();
 
     const { rerender } = render(
-      <PcnLayer
-        data={pcnFixture}
+      <RouteOverlayLayer
+        {...routeLayerProps}
         map={map as never}
         selectedObjectId={null}
-        onSelect={vi.fn()}
-        onClearSelection={vi.fn()}
       />
     );
 
     rerender(
-      <PcnLayer
-        data={pcnFixture}
+      <RouteOverlayLayer
+        {...routeLayerProps}
         map={map as never}
         selectedObjectId={202}
-        onSelect={vi.fn()}
-        onClearSelection={vi.fn()}
       />
     );
 
     expect(map.setFilter).toHaveBeenLastCalledWith(
-      'pcn-selected-inner-layer',
+      'routes-selected-layer',
       ['==', ['get', 'OBJECTID'], 202]
     );
   });
