@@ -88,6 +88,9 @@ export function MapPage() {
   const hasAutoCenteredRef = useRef(false);
   const geolocation = useGeolocation();
   const [mapReady, setMapReady] = useState(false);
+  const [isFollowingUser, setIsFollowingUser] = useState(false);
+  const [followNotice, setFollowNotice] = useState<string | null>(null);
+  const [isFollowNoticeVisible, setIsFollowNoticeVisible] = useState(false);
   const [pcnData, setPcnData] = useState<PcnGeoJson | null>(null);
   const [cyclingPathData, setCyclingPathData] = useState<CyclingPathGeoJson | null>(null);
   const [pcnError, setPcnError] = useState<string | null>(null);
@@ -95,9 +98,47 @@ export function MapPage() {
   const [selectedRoute, setSelectedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [displayedRoute, setDisplayedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
+  const followNoticeTimeoutRef = useRef<number | null>(null);
+  const clearFollowNoticeTimeoutRef = useRef<number | null>(null);
   const clearSelectedRoute = useCallback(() => {
     setSelectedRoute(null);
   }, []);
+  const showFollowNotice = useCallback((message: string) => {
+    setFollowNotice(message);
+    setIsFollowNoticeVisible(true);
+
+    if (followNoticeTimeoutRef.current) {
+      window.clearTimeout(followNoticeTimeoutRef.current);
+    }
+
+    if (clearFollowNoticeTimeoutRef.current) {
+      window.clearTimeout(clearFollowNoticeTimeoutRef.current);
+    }
+
+    followNoticeTimeoutRef.current = window.setTimeout(() => {
+      setIsFollowNoticeVisible(false);
+      followNoticeTimeoutRef.current = null;
+    }, 1500);
+  }, []);
+  const toggleFollowUser = useCallback(() => {
+    setIsFollowingUser((current) => {
+      if (current) {
+        return false;
+      }
+
+      if (mapRef.current && geolocation.location) {
+        hasAutoCenteredRef.current = true;
+        flyToLocation(
+          mapRef.current,
+          geolocation.location.longitude,
+          geolocation.location.latitude
+        );
+      }
+
+      showFollowNotice('Following your location');
+      return true;
+    });
+  }, [geolocation.location, showFollowNotice]);
   const unifiedRoutes = useMemo(() => buildUnifiedRoutes(pcnData, cyclingPathData), [pcnData, cyclingPathData]);
   const routeLayerIds = useMemo(
     () => ({
@@ -125,6 +166,24 @@ export function MapPage() {
   );
 
   useEffect(() => {
+    if (!followNotice || isFollowNoticeVisible) {
+      return;
+    }
+
+    clearFollowNoticeTimeoutRef.current = window.setTimeout(() => {
+      setFollowNotice(null);
+      clearFollowNoticeTimeoutRef.current = null;
+    }, 240);
+
+    return () => {
+      if (clearFollowNoticeTimeoutRef.current) {
+        window.clearTimeout(clearFollowNoticeTimeoutRef.current);
+        clearFollowNoticeTimeoutRef.current = null;
+      }
+    };
+  }, [followNotice, isFollowNoticeVisible]);
+
+  useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) {
       return;
     }
@@ -137,6 +196,14 @@ export function MapPage() {
     });
 
     return () => {
+      if (followNoticeTimeoutRef.current) {
+        window.clearTimeout(followNoticeTimeoutRef.current);
+      }
+
+      if (clearFollowNoticeTimeoutRef.current) {
+        window.clearTimeout(clearFollowNoticeTimeoutRef.current);
+      }
+
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
@@ -160,11 +227,44 @@ export function MapPage() {
 
     userMarkerRef.current.setLngLat([location.longitude, location.latitude]);
 
+    if (isFollowingUser) {
+      map.easeTo({
+        center: [location.longitude, location.latitude],
+        duration: 600,
+        essential: true
+      });
+      return;
+    }
+
     if (!hasAutoCenteredRef.current) {
       flyToLocation(map, location.longitude, location.latitude);
       hasAutoCenteredRef.current = true;
     }
-  }, [geolocation.location]);
+  }, [geolocation.location, isFollowingUser]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const stopFollowingOnManualNavigation = (event: { originalEvent?: unknown }) => {
+      if (!event.originalEvent) {
+        return;
+      }
+
+      setIsFollowingUser(false);
+    };
+
+    map.on('dragstart', stopFollowingOnManualNavigation);
+    map.on('zoomstart', stopFollowingOnManualNavigation);
+
+    return () => {
+      map.off('dragstart', stopFollowingOnManualNavigation);
+      map.off('zoomstart', stopFollowingOnManualNavigation);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -252,6 +352,19 @@ export function MapPage() {
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
       <LocationStatus state={geolocation} />
+      {followNotice ? (
+        <div className="pointer-events-none absolute inset-x-0 top-24 z-20 flex justify-center px-4">
+          <div
+            className={`animate-followNoticeIn min-w-[12.5rem] rounded-full border border-white/35 bg-slate-100/90 px-5 py-2 text-center text-sm text-slate-700 shadow-floating backdrop-blur-md transition-all duration-220 ease-out motion-reduce:transition-none ${
+              isFollowNoticeVisible
+                ? 'translate-y-0 scale-100 opacity-100'
+                : '-translate-y-2 scale-95 opacity-0'
+            }`}
+          >
+            {followNotice}
+          </div>
+        </div>
+      ) : null}
       {mapReady && unifiedRoutes ? (
         <RouteOverlayLayer
           data={unifiedRoutes}
@@ -352,16 +465,9 @@ export function MapPage() {
 
       <CenterOnMeButton
         disabled={!geolocation.location}
+        isFollowing={isFollowingUser}
         isRaised={Boolean(displayedRoute)}
-        onClick={() => {
-          if (mapRef.current && geolocation.location) {
-            flyToLocation(
-              mapRef.current,
-              geolocation.location.longitude,
-              geolocation.location.latitude
-            );
-          }
-        }}
+        onClick={toggleFollowUser}
       />
     </main>
   );
