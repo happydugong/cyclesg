@@ -1,84 +1,72 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ExpressionSpecification, Marker, Map } from 'maplibre-gl';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Marker, Map } from 'maplibre-gl';
 import { CenterOnMeButton } from '../components/CenterOnMeButton';
+import { CuratedPoiLayer } from '../components/CuratedPoiLayer';
+import {
+  LayerControlSheet,
+  type OverlayControlItem
+} from '../components/LayerControlSheet';
 import { LocationStatus } from '../components/LocationStatus';
 import { MapViewport } from '../components/MapViewport';
 import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
+import { SelectedRouteCard } from '../components/SelectedRouteCard';
+import myMapsOverlaysConfig from '../config/mymaps-overlays.json';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { trackEvent } from '../services/analytics/googleAnalytics';
 import { loadCyclingPathGeoJson } from '../services/cyclingPath/cyclingPathService';
+import { loadCuratedRoutesGeoJson } from '../services/curatedRoutes/curatedRoutesService';
 import { createMap, createUserLocationMarker, flyToLocation } from '../services/map/mapService';
 import { loadPcnGeoJson } from '../services/pcn/pcnService';
 import type { CyclingPathGeoJson } from '../types/cyclingPath';
 import type { PcnGeoJson } from '../types/pcn';
-import type { UnifiedRouteGeoJson, UnifiedRouteProperties } from '../types/routes';
+import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
+import type { UnifiedRouteProperties } from '../types/routes';
+import {
+  buildCyclingPathRoutes,
+  buildMyMapsOverlayLayerViewModels,
+  buildPcnRoutes,
+  getOverlayContentType,
+  getOverlayRouteLayerIds,
+  getRoutePresentation,
+  isUnifiedRouteFeature,
+  loadOverlayData,
+  normalizeUnifiedRouteProperties,
+  type MyMapsOverlayConfig,
+  type MyMapsOverlayLayerViewModel,
+  type StaticOverlayViewModel
+} from './mapPageOverlayUtils';
 
-function buildUnifiedRoutes(
-  pcnData: PcnGeoJson | null,
-  cyclingPathData: CyclingPathGeoJson | null
-): UnifiedRouteGeoJson | null {
-  if (!pcnData && !cyclingPathData) {
-    return null;
+const MYMAPS_OVERLAYS = myMapsOverlaysConfig as MyMapsOverlayConfig[];
+const OVERLAY_VISIBILITY_STORAGE_KEY = 'cyclesg.curatedOverlayVisibility.v1';
+const LAYER_PANEL_MEDIA_QUERY = '(min-width: 640px)';
+
+function readInitialLayerPanelOpen() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return true;
   }
 
-  return {
-    type: 'FeatureCollection',
-    features: [
-      ...(pcnData?.features.map((feature) => ({
-        ...feature,
-        properties: {
-          routeId: `pcn-${feature.properties.OBJECTID}`,
-          routeType: 'pcn' as const,
-          routeName: feature.properties.PARK,
-          routeGroup: feature.properties.PCN_LOOP,
-          routeLength: feature.properties['SHAPE.LEN']
-        }
-      })) ?? []),
-      ...(cyclingPathData?.features.map((feature) => ({
-        ...feature,
-        properties: {
-          routeId: `cycling-${feature.properties.OBJECTID_1}`,
-          routeType: 'cycling-path' as const,
-          routeName: feature.properties.CYL_PATH ?? 'LTA Cycling Path',
-          routeGroup:
-            feature.properties.AGENCY_MAINT ?? 'Land Transport Authority cycling path network',
-          routeLength: feature.properties['SHAPE_1.LEN']
-        }
-      })) ?? [])
-    ]
-  };
+  return window.matchMedia(LAYER_PANEL_MEDIA_QUERY).matches;
 }
 
-function isUnifiedRouteFeature(
-  feature: import('maplibre-gl').MapGeoJSONFeature | undefined
-): feature is import('maplibre-gl').MapGeoJSONFeature & {
-  properties: UnifiedRouteProperties;
-} {
-  const properties = feature?.properties as Record<string, unknown> | undefined;
+function readStoredOverlayVisibility() {
+  try {
+    const storedValue = window.localStorage.getItem(OVERLAY_VISIBILITY_STORAGE_KEY);
 
-  if (!properties) {
-    return false;
+    if (!storedValue) {
+      return {};
+    }
+
+    const storedVisibility = JSON.parse(storedValue) as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(storedVisibility).filter((entry): entry is [string, boolean] => {
+        return typeof entry[1] === 'boolean';
+      })
+    );
+  } catch {
+    return {};
   }
-
-  return typeof properties.routeId === 'string' && typeof properties.routeName === 'string';
 }
 
-function normalizeUnifiedRouteProperties(
-  properties: UnifiedRouteProperties
-): UnifiedRouteProperties {
-  return {
-    ...properties,
-    routeId: String(properties.routeId),
-    routeName: String(properties.routeName),
-    routeGroup: String(properties.routeGroup),
-    routeLength:
-      typeof properties.routeLength === 'number'
-        ? properties.routeLength
-        : properties.routeLength
-          ? Number(properties.routeLength)
-          : null
-  };
-}
 
 export function MapPage() {
   const authorUrl = 'https://huishun98.github.io/';
@@ -94,8 +82,12 @@ export function MapPage() {
   const [isFollowNoticeVisible, setIsFollowNoticeVisible] = useState(false);
   const [pcnData, setPcnData] = useState<PcnGeoJson | null>(null);
   const [cyclingPathData, setCyclingPathData] = useState<CyclingPathGeoJson | null>(null);
+  const [curatedRoutesData, setCuratedRoutesData] = useState<CuratedRoutesGeoJson | null>(null);
   const [pcnError, setPcnError] = useState<string | null>(null);
   const [cyclingPathError, setCyclingPathError] = useState<string | null>(null);
+  const [curatedRoutesError, setCuratedRoutesError] = useState<string | null>(null);
+  const [overlayLayerVisibility, setOverlayLayerVisibility] = useState(readStoredOverlayVisibility);
+  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(readInitialLayerPanelOpen);
   const [selectedRoute, setSelectedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [displayedRoute, setDisplayedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
@@ -146,31 +138,149 @@ export function MapPage() {
       return true;
     });
   }, [geolocation.location, showFollowNotice]);
-  const unifiedRoutes = useMemo(() => buildUnifiedRoutes(pcnData, cyclingPathData), [pcnData, cyclingPathData]);
-  const routeLayerIds = useMemo(
-    () => ({
-      source: 'routes-source',
-      route: 'routes-route-layer',
-      selected: 'routes-selected-layer',
-      hitArea: 'routes-hit-area-layer'
-    }),
-    []
+  const pcnRoutes = useMemo(() => buildPcnRoutes(pcnData), [pcnData]);
+  const cyclingPathRoutes = useMemo(() => buildCyclingPathRoutes(cyclingPathData), [cyclingPathData]);
+  const myMapsOverlayLayerViewModels = useMemo<MyMapsOverlayLayerViewModel[]>(
+    () =>
+      buildMyMapsOverlayLayerViewModels(curatedRoutesData, MYMAPS_OVERLAYS),
+    [curatedRoutesData]
   );
-  const routePalette = useMemo(
-    () => ({
-      routeColor: [
-        'match',
-        ['get', 'routeType'],
-        'pcn',
-        '#2FA66A',
-        'cycling-path',
-        '#BE93D4',
-        '#2FA66A'
-      ] as ExpressionSpecification,
-      selectedColor: '#526072'
-    }),
-    []
+  const officialOverlayViewModels = useMemo<StaticOverlayViewModel[]>(
+    () => [
+      {
+        id: 'official-pcn',
+        label: 'PCN',
+        routeData: pcnRoutes,
+        routeLayerIds: getOverlayRouteLayerIds('official-pcn'),
+        palette: {
+          routeColor: '#2FA66A',
+          selectedColor: '#526072'
+        }
+      },
+      {
+        id: 'official-cycling-path',
+        label: 'Cycling Path',
+        routeData: cyclingPathRoutes,
+        routeLayerIds: getOverlayRouteLayerIds('official-cycling-path'),
+        palette: {
+          routeColor: '#BE93D4',
+          selectedColor: '#526072'
+        }
+      }
+    ],
+    [cyclingPathRoutes, pcnRoutes]
   );
+  const overlayPills = useMemo<OverlayControlItem[]>(
+    () => [
+      ...officialOverlayViewModels.map((overlayLayer) => ({
+        id: overlayLayer.id,
+        label: overlayLayer.label,
+        contentType: getOverlayContentType({ routeData: overlayLayer.routeData }),
+        defaultVisible: true,
+        description:
+          overlayLayer.id === 'official-pcn'
+            ? 'Official NParks park connector routes.'
+            : 'Official LTA cycling path routes.',
+        indicatorColor:
+          typeof overlayLayer.palette.routeColor === 'string'
+            ? overlayLayer.palette.routeColor
+            : '#CBD5E1',
+        activeBackgroundColor:
+          overlayLayer.id === 'official-pcn' ? '#DCFCE7' : '#F3E8FF',
+        activeTextColor:
+          overlayLayer.id === 'official-pcn' ? '#166534' : '#6B21A8'
+      })),
+      ...myMapsOverlayLayerViewModels.map((overlayLayer) => ({
+        id: overlayLayer.id,
+        label: overlayLayer.label,
+        contentType: getOverlayContentType(overlayLayer),
+        defaultVisible: overlayLayer.config.defaultVisible !== false,
+        description: `${overlayLayer.config.name} Google My Maps layer.`,
+        indicatorColor: overlayLayer.colors.route,
+        activeBackgroundColor: overlayLayer.colors.poiHalo,
+        activeTextColor: overlayLayer.colors.selected
+      }))
+    ],
+    [myMapsOverlayLayerViewModels, officialOverlayViewModels]
+  );
+  const isOverlayLayerVisible = useCallback(
+    (overlayLayer: { id: string; defaultVisible?: boolean }) => {
+      const storedValue = overlayLayerVisibility[overlayLayer.id];
+
+      if (typeof storedValue === 'boolean') {
+        return storedValue;
+      }
+
+      return overlayLayer.defaultVisible !== false;
+    },
+    [overlayLayerVisibility]
+  );
+  const visibleOfficialOverlayViewModels = useMemo(
+    () =>
+      officialOverlayViewModels.filter((overlayLayer) =>
+        isOverlayLayerVisible({ id: overlayLayer.id, defaultVisible: true })
+      ),
+    [isOverlayLayerVisible, officialOverlayViewModels]
+  );
+  const visibleMyMapsOverlayLayerViewModels = useMemo(
+    () =>
+      myMapsOverlayLayerViewModels.filter((overlayLayer) =>
+        isOverlayLayerVisible({
+          id: overlayLayer.id,
+          defaultVisible: overlayLayer.config.defaultVisible !== false
+        })
+      ),
+    [isOverlayLayerVisible, myMapsOverlayLayerViewModels]
+  );
+  const displayedRoutePresentation = displayedRoute ? getRoutePresentation(displayedRoute) : null;
+  const displayedRouteOverlayConfig = useMemo(
+    () =>
+      displayedRoute?.overlayId
+        ? MYMAPS_OVERLAYS.find((overlay) => overlay.id === displayedRoute.overlayId) ?? null
+        : null,
+    [displayedRoute]
+  );
+
+  const toggleOverlayVisibility = useCallback((overlayLayerId: string, defaultVisible: boolean) => {
+    setOverlayLayerVisibility((current) => ({
+      ...current,
+      [overlayLayerId]:
+        typeof current[overlayLayerId] === 'boolean'
+          ? !current[overlayLayerId]
+          : !defaultVisible
+    }));
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      OVERLAY_VISIBILITY_STORAGE_KEY,
+      JSON.stringify(overlayLayerVisibility)
+    );
+  }, [overlayLayerVisibility]);
+
+  useEffect(() => {
+    if (!selectedRoute?.overlayLayerId) {
+      return;
+    }
+
+    const selectedOverlayPill = overlayPills.find(
+      (overlayLayer) => overlayLayer.id === selectedRoute.overlayLayerId
+    );
+
+    if (!selectedOverlayPill || isOverlayLayerVisible(selectedOverlayPill)) {
+      return;
+    }
+
+    setSelectedRoute(null);
+  }, [isOverlayLayerVisible, overlayPills, selectedRoute]);
+
+  useEffect(() => {
+    if (!displayedRoute) {
+      return;
+    }
+
+    setIsLayerPanelOpen(false);
+  }, [displayedRoute]);
 
   useEffect(() => {
     if (!followNotice || isFollowNoticeVisible) {
@@ -274,59 +384,51 @@ export function MapPage() {
   }, []);
 
   useEffect(() => {
-    let active = true;
-
-    void loadPcnGeoJson()
-      .then((data) => {
-        if (!active) {
-          return;
-        }
-
+    return loadOverlayData(
+      loadPcnGeoJson,
+      (data) => {
         setPcnData(data);
         setPcnError(null);
-      })
-      .catch(() => {
-        if (!active) {
-          return;
-        }
-
+      },
+      () => {
         setPcnError('Unable to load Park Connector overlays.');
         trackEvent('overlay_load_error', {
           overlay_type: 'pcn'
         });
-      });
-
-    return () => {
-      active = false;
-    };
+      }
+    );
   }, []);
 
   useEffect(() => {
-    let active = true;
-
-    void loadCyclingPathGeoJson()
-      .then((data) => {
-        if (!active) {
-          return;
-        }
-
+    return loadOverlayData(
+      loadCyclingPathGeoJson,
+      (data) => {
         setCyclingPathData(data);
         setCyclingPathError(null);
-      })
-      .catch(() => {
-        if (!active) {
-          return;
-        }
-
+      },
+      () => {
         setCyclingPathError('Unable to load cycling path overlays.');
         trackEvent('overlay_load_error', {
           overlay_type: 'cycling_path'
         });
-      });
+      }
+    );
+  }, []);
 
-    return () => {
-      active = false;
-    };
+  useEffect(() => {
+    return loadOverlayData(
+      loadCuratedRoutesGeoJson,
+      (data) => {
+        setCuratedRoutesData(data);
+        setCuratedRoutesError(null);
+      },
+      () => {
+        setCuratedRoutesError('Unable to load curated route overlays.');
+        trackEvent('overlay_load_error', {
+          overlay_type: 'curated_routes'
+        });
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -373,6 +475,45 @@ export function MapPage() {
     });
   }, [selectedRoute]);
 
+  useEffect(() => {
+    if (!mapReady) {
+      return;
+    }
+
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const orderedLayerIds = [
+        ...visibleOfficialOverlayViewModels.flatMap((overlayLayer) => [
+          overlayLayer.routeLayerIds.route,
+          overlayLayer.routeLayerIds.hitArea,
+          overlayLayer.routeLayerIds.selected
+        ]),
+        ...visibleMyMapsOverlayLayerViewModels.flatMap((overlayLayer) => [
+          overlayLayer.routeLayerIds.route,
+          overlayLayer.routeLayerIds.hitArea,
+          overlayLayer.routeLayerIds.selected,
+          overlayLayer.poiLayerIds.circle,
+          overlayLayer.poiLayerIds.label
+        ])
+      ];
+
+      for (const layerId of orderedLayerIds) {
+        if (map.getLayer(layerId)) {
+          map.moveLayer(layerId);
+        }
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [mapReady, visibleMyMapsOverlayLayerViewModels, visibleOfficialOverlayViewModels]);
+
   return (
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
@@ -390,100 +531,92 @@ export function MapPage() {
           </div>
         </div>
       ) : null}
-      {mapReady && unifiedRoutes ? (
-        <RouteOverlayLayer
-          data={unifiedRoutes}
-          ids={routeLayerIds}
-          isFeature={isUnifiedRouteFeature}
-          map={mapRef.current}
-          normalizeProperties={normalizeUnifiedRouteProperties}
-          objectIdKey="routeId"
-          onClearSelection={clearSelectedRoute}
-          onSelect={setSelectedRoute}
-          palette={routePalette}
-          selectedObjectId={selectedRoute?.routeId ?? null}
-        />
-      ) : null}
+      {mapReady
+        ? visibleOfficialOverlayViewModels.map((overlayLayer) =>
+          overlayLayer.routeData ? (
+            <RouteOverlayLayer
+              key={overlayLayer.id}
+              data={overlayLayer.routeData}
+              ids={overlayLayer.routeLayerIds}
+              isFeature={isUnifiedRouteFeature}
+              map={mapRef.current}
+              normalizeProperties={normalizeUnifiedRouteProperties}
+              objectIdKey="routeId"
+              onClearSelection={clearSelectedRoute}
+              onSelect={setSelectedRoute}
+              palette={overlayLayer.palette}
+              selectedObjectId={selectedRoute?.routeId ?? null}
+            />
+          ) : null
+        )
+        : null}
+      {mapReady
+        ? visibleMyMapsOverlayLayerViewModels.map((overlayLayer) => (
+          <Fragment key={overlayLayer.id}>
+            {overlayLayer.routeData ? (
+              <RouteOverlayLayer
+                data={overlayLayer.routeData}
+                ids={overlayLayer.routeLayerIds}
+                isFeature={isUnifiedRouteFeature}
+                map={mapRef.current}
+              normalizeProperties={normalizeUnifiedRouteProperties}
+              objectIdKey="routeId"
+              onClearSelection={clearSelectedRoute}
+              onSelect={setSelectedRoute}
+              palette={{
+                routeColor: overlayLayer.colors.route,
+                selectedColor: overlayLayer.colors.selected
+              }}
+              selectedObjectId={selectedRoute?.routeId ?? null}
+            />
+          ) : null}
+            {overlayLayer.poiData ? (
+              <CuratedPoiLayer
+                data={overlayLayer.poiData}
+                ids={overlayLayer.poiLayerIds}
+                map={mapRef.current}
+                palette={{
+                  circleColor: overlayLayer.colors.poi,
+                  textColor: overlayLayer.colors.poiText,
+                  textHaloColor: overlayLayer.colors.poiHalo
+                }}
+              />
+            ) : null}
+          </Fragment>
+        ))
+        : null}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start p-4">
-        <div className="rounded-full border border-white/15 bg-slate-950/55 px-4 py-2 text-sm text-slate-100 shadow-floating backdrop-blur-md">
-          CycleSG
+        <div className="rounded-[22px] border border-white/15 bg-slate-950/55 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur-md">
+          <div>CycleSG</div>
         </div>
       </div>
 
-      {displayedRoute ? (
-        <div
-          className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
-            isRouteCardVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
-          }`}
-        >
-          <div className="pointer-events-auto mx-auto max-w-md rounded-[28px] border border-slate-900/10 bg-white/90 p-4 text-slate-700 shadow-floating backdrop-blur-md">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-slate-500">
-                  <span
-                    aria-hidden="true"
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      displayedRoute.routeType === 'pcn' ? 'bg-[#2FA66A]' : 'bg-[#BE93D4]'
-                    }`}
-                  />
-                  <span>
-                    {displayedRoute.routeType === 'pcn' ? 'Park Connector' : 'Cycling Path'}
-                  </span>
-                </p>
-                <h2 className="mt-1 text-base font-semibold text-slate-900">
-                  {displayedRoute.routeName}
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedRoute(null)}
-                aria-label="Close selected route details"
-                className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500"
-              >
-                <span className="text-lg leading-none">×</span>
-              </button>
-            </div>
-            <p className="mt-2 text-sm text-slate-600">
-              {displayedRoute.routeGroup}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <span>Segment ID {displayedRoute.routeId}</span>
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-              <span>
-                {displayedRoute.routeLength !== null
-                  ? `${Math.round(displayedRoute.routeLength)}m mapped length`
-                  : 'Length unavailable'}
-              </span>
-            </div>
-            <div className="mt-4 border-t border-slate-200/80 pt-3 text-xs text-slate-500">
-              <span>By </span>
-              <a
-                href={authorUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
-              >
-                Hui Shun
-              </a>
-              <span className="px-2 text-slate-300">•</span>
-              <a
-                href={repositoryUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
-              >
-                Open source
-              </a>
-            </div>
-          </div>
-        </div>
+      {!displayedRoute ? (
+        <LayerControlSheet
+          items={overlayPills}
+          isOpen={isLayerPanelOpen}
+          isVisible={isOverlayLayerVisible}
+          onClose={() => setIsLayerPanelOpen(false)}
+          onOpen={() => setIsLayerPanelOpen(true)}
+          onToggle={toggleOverlayVisibility}
+        />
       ) : null}
 
-      {pcnError || cyclingPathError ? (
+      <SelectedRouteCard
+        authorUrl={authorUrl}
+        attribution={displayedRouteOverlayConfig?.attribution ?? null}
+        isVisible={isRouteCardVisible}
+        onClose={() => setSelectedRoute(null)}
+        presentation={displayedRoutePresentation}
+        repositoryUrl={repositoryUrl}
+        route={displayedRoute}
+      />
+
+      {pcnError || cyclingPathError || curatedRoutesError ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
           <div className="rounded-full border border-rose-200/70 bg-white/90 px-4 py-2 text-xs text-rose-700 shadow-floating backdrop-blur-md">
-            {[pcnError, cyclingPathError].filter(Boolean).join(' ')}
+            {[pcnError, cyclingPathError, curatedRoutesError].filter(Boolean).join(' ')}
           </div>
         </div>
       ) : null}

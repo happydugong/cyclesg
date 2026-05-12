@@ -43,6 +43,12 @@ const SELECTED_LINE_WIDTH: ExpressionSpecification = [
   9.4
 ];
 
+function isStyleLoadingError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+
+  return message.toLowerCase().includes('style is not done loading');
+}
+
 interface RouteOverlayLayerIds {
   source: string;
   route: string;
@@ -159,13 +165,33 @@ export function RouteOverlayLayer<TProperties>({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      addLayer();
-    } else {
-      map.once('load', addLayer);
-    }
+    let isMounted = true;
+
+    // Try immediately, then retry once on `load` if MapLibre briefly reports
+    // "Style is not done loading" while the current style is settling.
+    const addLayerWhenReady = () => {
+      if (!isMounted) {
+        return;
+      }
+
+      try {
+        addLayer();
+      } catch (error) {
+        if (isStyleLoadingError(error)) {
+          map.once('load', addLayerWhenReady);
+          return;
+        }
+
+        throw error;
+      }
+    };
+
+    addLayerWhenReady();
 
     return () => {
+      isMounted = false;
+      map.off('load', addLayerWhenReady);
+
       if (map.getLayer(ids.selected)) {
         map.removeLayer(ids.selected);
       }

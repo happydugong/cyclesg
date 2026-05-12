@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "google-my-maps",
+  "syncedAt": "2026-05-12T17:33:22.624Z",
+  "featureCount": 1236,
+  "lineCount": 674,
+  "pointCount": 562,
+  "overlays": [
+    {
+      "id": "jonathan-route",
+      "name": "Jonathan's New PCN on Bikes",
+      "sourceUrl": "https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1",
+      "featureCount": 1236,
+      "lineCount": 674,
+      "pointCount": 562
+    }
+  ]
+}

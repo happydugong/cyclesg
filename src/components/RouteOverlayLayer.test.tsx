@@ -98,6 +98,26 @@ describe('RouteOverlayLayer', () => {
     );
   });
 
+  it('does not wait on isStyleLoaded before adding layers', () => {
+    const map = createMapMock();
+    map.isStyleLoaded.mockReturnValue(false);
+
+    render(
+      <RouteOverlayLayer
+        {...routeLayerProps}
+        map={map as never}
+        selectedObjectId={null}
+      />
+    );
+
+    expect(map.addSource).toHaveBeenCalledWith(
+      'routes-source',
+      expect.objectContaining({ type: 'geojson', data: pcnFixture })
+    );
+    expect(map.isStyleLoaded).not.toHaveBeenCalled();
+    expect(map.once).not.toHaveBeenCalledWith('load', expect.any(Function));
+  });
+
   it('updates the selected route filter when a route is selected', () => {
     const map = createMapMock();
 

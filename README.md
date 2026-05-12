@@ -9,6 +9,7 @@ Production-oriented MVP for a Singapore cycling planner PWA built with React, Ty
 - Floating `center on me` control
 - Singapore Park Connector Network GeoJSON overlay from official NParks open data
 - Singapore cycling path GeoJSON overlay from official LTA open data
+- Configurable curated Google My Maps overlays with route lines and POI pins
 - Installable PWA manifest and service worker registration
 - Offline app-shell caching for startup
 - Environment variable support for future map or API configuration
@@ -152,6 +153,8 @@ Set `VITE_GA_MEASUREMENT_ID` in your hosting provider's build environment as wel
   `https://tiles.openfreemap.org/styles/liberty`
 - PCN data is stored at `src/assets/pcn.geojson`
 - Cycling path data is stored at `src/assets/cycling-paths.geojson`
+- Curated My Maps overlay config is stored at `src/config/mymaps-overlays.json`
+- Curated My Maps data is stored at `src/assets/curated-routes.geojson`
 - The current file is sourced from NParks on data.gov.sg:
   `https://data.gov.sg/datasets/d_a69ef89737379f231d2ae93fd1c5707f/view`
 - Cycling path data is sourced from LTA on data.gov.sg:
@@ -160,6 +163,7 @@ Set `VITE_GA_MEASUREMENT_ID` in your hosting provider's build environment as wel
 - Dataset title: `Cycling Path Network (GEOJSON)`
 - Dataset page showed `Last updated: 15 Apr 2026, 10:06 SGT` when fetched for this update
 - The app loads GeoJSON through a small service abstraction so the asset is parsed explicitly instead of imported as executable code.
+- The curated overlay preserves source layer and styling metadata where available, but app rendering uses its own presentation.
 
 ## PCN sync
 
@@ -181,6 +185,19 @@ pnpm sync:pcn
 - The downside is repository growth over time if large GeoJSON snapshots are committed often
 - Weekly sync is a better default than daily if git is the persistence layer
 - If the file grows substantially or update frequency increases, move the dataset out of git and into a storage bucket or backend cache
+
+## Curated Routes sync
+
+- The repo includes a curated overlay sync script at `scripts/sync-curated-routes.mjs`
+- Run it locally with:
+
+```bash
+pnpm sync:curated-routes
+```
+
+- The script reads `src/config/mymaps-overlays.json`, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
+- A separate GitHub Actions workflow at `.github/workflows/sync-curated-routes.yml` supports manual refresh through `workflow_dispatch` only
+- This overlay is a third-party curated source, not official NParks data, so review attribution and permission requirements before republishing it
 
 ## Feedback
 
