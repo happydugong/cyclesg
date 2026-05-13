@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { Window } from 'happy-dom';
+import { loadMyMapsOverlaySourceConfigs } from './overlay-source-config.mjs';
 
 const execFileAsync = promisify(execFile);
 const domParser = new Window().DOMParser;
@@ -19,7 +20,6 @@ const SINGAPORE_BOUNDS = {
 export const CURATED_ROUTES_SOURCE_URL =
   'https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1';
 
-const CONFIG_PATH = resolve(process.cwd(), 'src/config/mymaps-overlays.json');
 const OUTPUT_PATH = resolve(process.cwd(), 'src/assets/curated-routes.geojson');
 const METADATA_PATH = resolve(process.cwd(), 'src/assets/curated-routes-metadata.json');
 
@@ -423,22 +423,12 @@ function countFeatureTypes(features) {
   );
 }
 
-export async function loadMyMapsOverlayConfigs(configPath = CONFIG_PATH) {
-  const configText = await readFile(configPath, 'utf8');
-  const overlays = JSON.parse(configText);
-
-  assert(Array.isArray(overlays) && overlays.length > 0, 'My Maps overlay config must contain at least one overlay.');
-
-  for (const overlay of overlays) {
-    assert(typeof overlay.id === 'string' && overlay.id.length > 0, 'Each My Maps overlay must have an id.');
-    assert(typeof overlay.name === 'string' && overlay.name.length > 0, 'Each My Maps overlay must have a name.');
-    assert(
-      typeof overlay.sourceUrl === 'string' && overlay.sourceUrl.length > 0,
-      `My Maps overlay ${overlay.id} must have a sourceUrl.`
-    );
-  }
-
-  return overlays;
+function normalizeMyMapsOverlayConfig(overlay) {
+  return {
+    ...overlay,
+    name: overlay.label ?? overlay.name,
+    sourceUrl: overlay.sync?.sourceUrl ?? overlay.sourceUrl
+  };
 }
 
 function annotateOverlayFeatures(geoJson, overlay) {
@@ -454,7 +444,9 @@ function annotateOverlayFeatures(geoJson, overlay) {
 }
 
 export async function syncCuratedRoutes(fetchImpl = fetch, options = {}) {
-  const overlays = options.overlays ?? await loadMyMapsOverlayConfigs(options.configPath);
+  const overlays = (
+    options.overlays ?? await loadMyMapsOverlaySourceConfigs(options.configPath)
+  ).map(normalizeMyMapsOverlayConfig);
   const overlayResults = [];
   const combinedFeatures = [];
 

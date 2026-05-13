@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { loadDataGovOverlaySourceConfigs } from './overlay-source-config.mjs';
 
 const SINGAPORE_BOUNDS = {
   minLng: 103.58,
@@ -7,25 +8,6 @@ const SINGAPORE_BOUNDS = {
   minLat: 1.19,
   maxLat: 1.48
 };
-
-const DATASETS = [
-  {
-    datasetId: 'd_a69ef89737379f231d2ae93fd1c5707f',
-    datasetTitle: 'Park Connector Loop',
-    agency: 'NParks',
-    outputPath: resolve(process.cwd(), 'src/assets/pcn.geojson'),
-    metadataPath: resolve(process.cwd(), 'src/assets/pcn-metadata.json'),
-    minFeatureCount: 100
-  },
-  {
-    datasetId: 'd_8f468b25193f64be8a16fa7d8f60f553',
-    datasetTitle: 'Cycling Path Network (GEOJSON)',
-    agency: 'LTA',
-    outputPath: resolve(process.cwd(), 'src/assets/cycling-paths.geojson'),
-    metadataPath: resolve(process.cwd(), 'src/assets/cycling-paths-metadata.json'),
-    minFeatureCount: 100
-  }
-];
 
 function assert(condition, message) {
   if (!condition) {
@@ -123,34 +105,40 @@ async function writeIfChanged(filePath, contents) {
   return true;
 }
 
-async function syncDataset(dataset) {
-  const datasetPageUrl = `https://data.gov.sg/datasets/${dataset.datasetId}/view`;
-  const downloadPollUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${dataset.datasetId}/poll-download`;
+async function syncDataset(source) {
+  const datasetPageUrl = `https://data.gov.sg/datasets/${source.sync.datasetId}/view`;
+  const downloadPollUrl = `https://api-open.data.gov.sg/v1/public/api/datasets/${source.sync.datasetId}/poll-download`;
   const pollResult = await fetchJson(downloadPollUrl);
 
   assert(pollResult.code === 0, pollResult.errMsg || 'Download poll failed.');
   assert(pollResult.data?.url, 'Download URL missing from poll response.');
 
   const geoJson = await fetchJson(pollResult.data.url);
-  validateFeatureCollection(geoJson, dataset.minFeatureCount);
+  validateFeatureCollection(geoJson, source.sync.minFeatureCount);
 
   const normalizedGeoJson = `${JSON.stringify(geoJson, null, 2)}\n`;
   const metadata = {
-    datasetId: dataset.datasetId,
+    datasetId: source.sync.datasetId,
     datasetPageUrl,
-    datasetTitle: dataset.datasetTitle,
-    agency: dataset.agency,
+    datasetTitle: source.sync.datasetTitle,
+    agency: source.sync.agency,
     syncedAt: new Date().toISOString(),
     featureCount: geoJson.features.length
   };
   const normalizedMetadata = `${JSON.stringify(metadata, null, 2)}\n`;
 
-  const geoJsonChanged = await writeIfChanged(dataset.outputPath, normalizedGeoJson);
-  const metadataChanged = await writeIfChanged(dataset.metadataPath, normalizedMetadata);
+  const geoJsonChanged = await writeIfChanged(
+    resolve(process.cwd(), source.asset.geoJson),
+    normalizedGeoJson
+  );
+  const metadataChanged = await writeIfChanged(
+    resolve(process.cwd(), source.asset.metadata),
+    normalizedMetadata
+  );
 
   return {
-    datasetId: dataset.datasetId,
-    datasetTitle: dataset.datasetTitle,
+    datasetId: source.sync.datasetId,
+    datasetTitle: source.sync.datasetTitle,
     featureCount: geoJson.features.length,
     geoJsonChanged,
     metadataChanged
@@ -158,10 +146,11 @@ async function syncDataset(dataset) {
 }
 
 async function main() {
+  const sources = await loadDataGovOverlaySourceConfigs();
   const results = [];
 
-  for (const dataset of DATASETS) {
-    results.push(await syncDataset(dataset));
+  for (const source of sources) {
+    results.push(await syncDataset(source));
   }
 
   console.log(JSON.stringify(results, null, 2));

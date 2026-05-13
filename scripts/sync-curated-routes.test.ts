@@ -128,13 +128,33 @@ describe('sync-curated-routes parser', () => {
       const overlays = [
         {
           id: 'jonathan-route',
-          name: 'Jonathan Route',
-          sourceUrl: 'https://example.com/cycling.kml'
+          label: 'Jonathan Route',
+          sourceKind: 'google-my-maps',
+          featureAdapter: 'my-maps',
+          defaultVisible: false,
+          description: 'Jonathan Route Google My Maps layer.',
+          asset: {
+            geoJson: 'src/assets/curated-routes.geojson',
+            metadata: 'src/assets/curated-routes-metadata.json'
+          },
+          sync: {
+            sourceUrl: 'https://example.com/cycling.kml'
+          }
         },
         {
           id: 'food-stops',
-          name: 'Food Stops',
-          sourceUrl: 'https://example.com/food.kml'
+          label: 'Food Stops',
+          sourceKind: 'google-my-maps',
+          featureAdapter: 'my-maps',
+          defaultVisible: false,
+          description: 'Food Stops Google My Maps layer.',
+          asset: {
+            geoJson: 'src/assets/curated-routes.geojson',
+            metadata: 'src/assets/curated-routes-metadata.json'
+          },
+          sync: {
+            sourceUrl: 'https://example.com/food.kml'
+          }
         }
       ];
       const requestedUrls: string[] = [];

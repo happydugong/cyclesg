@@ -153,7 +153,7 @@ Set `VITE_GA_MEASUREMENT_ID` in your hosting provider's build environment as wel
   `https://tiles.openfreemap.org/styles/liberty`
 - PCN data is stored at `src/assets/pcn.geojson`
 - Cycling path data is stored at `src/assets/cycling-paths.geojson`
-- Curated My Maps overlay config is stored at `src/config/mymaps-overlays.json`
+- Overlay source config is stored at `src/config/overlay-sources.json`
 - Curated My Maps data is stored at `src/assets/curated-routes.geojson`
 - The current file is sourced from NParks on data.gov.sg:
   `https://data.gov.sg/datasets/d_a69ef89737379f231d2ae93fd1c5707f/view`
@@ -195,7 +195,7 @@ pnpm sync:pcn
 pnpm sync:curated-routes
 ```
 
-- The script reads `src/config/mymaps-overlays.json`, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
+- The script reads `src/config/overlay-sources.json`, filters Google My Maps source entries, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
 - A separate GitHub Actions workflow at `.github/workflows/sync-curated-routes.yml` supports manual refresh through `workflow_dispatch` only
 - This overlay is a third-party curated source, not official NParks data, so review attribution and permission requirements before republishing it
 

@@ -1,0 +1,142 @@
+[
+  {
+    "id": "official-pcn",
+    "label": "PCN",
+    "sourceKind": "data-gov-sg",
+    "featureAdapter": "pcn",
+    "defaultVisible": true,
+    "description": "Official NParks park connector routes.",
+    "asset": {
+      "geoJson": "src/assets/pcn.geojson",
+      "metadata": "src/assets/pcn-metadata.json"
+    },
+    "sync": {
+      "datasetId": "d_a69ef89737379f231d2ae93fd1c5707f",
+      "datasetTitle": "Park Connector Loop",
+      "agency": "NParks",
+      "minFeatureCount": 100
+    },
+    "presentation": {
+      "routeColor": "#2FA66A",
+      "selectedColor": "#526072",
+      "activeBackgroundColor": "#DCFCE7",
+      "activeTextColor": "#166534"
+    }
+  },
+  {
+    "id": "official-cycling-path",
+    "label": "Cycling Path",
+    "sourceKind": "data-gov-sg",
+    "featureAdapter": "cycling-path",
+    "defaultVisible": true,
+    "description": "Official LTA cycling path routes.",
+    "asset": {
+      "geoJson": "src/assets/cycling-paths.geojson",
+      "metadata": "src/assets/cycling-paths-metadata.json"
+    },
+    "sync": {
+      "datasetId": "d_8f468b25193f64be8a16fa7d8f60f553",
+      "datasetTitle": "Cycling Path Network (GEOJSON)",
+      "agency": "LTA",
+      "minFeatureCount": 100
+    },
+    "presentation": {
+      "routeColor": "#BE93D4",
+      "selectedColor": "#526072",
+      "activeBackgroundColor": "#F3E8FF",
+      "activeTextColor": "#6B21A8"
+    }
+  },
+  {
+    "id": "jonathan-route",
+    "label": "Jonathan's New PCN on Bikes",
+    "sourceKind": "google-my-maps",
+    "featureAdapter": "my-maps",
+    "defaultVisible": false,
+    "description": "Jonathan's New PCN on Bikes Google My Maps layer.",
+    "asset": {
+      "geoJson": "src/assets/curated-routes.geojson",
+      "metadata": "src/assets/curated-routes-metadata.json"
+    },
+    "sync": {
+      "sourceUrl": "https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1"
+    },
+    "presentation": {
+      "routeColor": "#F97316",
+      "selectedColor": "#7C2D12",
+      "activeBackgroundColor": "#FFF7ED",
+      "activeTextColor": "#7C2D12"
+    },
+    "layerRules": {
+      "hiddenLayerNames": ["PCN", "Cycling Path Network"],
+      "poiIcons": {
+        "byLayerName": {
+          "Bicycle Shops": "/poi-icons/bicycle-shop.svg"
+        }
+      },
+      "poiIconScales": {
+        "byLayerName": {
+          "Bicycle Shops": 0.62
+        }
+      },
+      "colors": {
+        "default": {
+          "route": "#F97316",
+          "selected": "#7C2D12",
+          "poi": "#F97316",
+          "poiText": "#7C2D12",
+          "poiHalo": "#FFF7ED"
+        },
+        "byLayerName": {
+          "Others": {
+            "route": "#F97316",
+            "selected": "#7C2D12",
+            "poi": "#F97316",
+            "poiText": "#7C2D12",
+            "poiHalo": "#FFF7ED"
+          },
+          "Common On Road Routes": {
+            "route": "#2563EB",
+            "selected": "#1E3A8A",
+            "poi": "#2563EB",
+            "poiText": "#1E3A8A",
+            "poiHalo": "#DBEAFE"
+          },
+          "MTB Routes": {
+            "route": "#16A34A",
+            "selected": "#166534",
+            "poi": "#16A34A",
+            "poiText": "#166534",
+            "poiHalo": "#DCFCE7"
+          },
+          "Notes": {
+            "route": "#DC2626",
+            "selected": "#991B1B",
+            "poi": "#DC2626",
+            "poiText": "#991B1B",
+            "poiHalo": "#FEE2E2"
+          },
+          "Danger Areas": {
+            "route": "#7C3AED",
+            "selected": "#5B21B6",
+            "poi": "#7C3AED",
+            "poiText": "#5B21B6",
+            "poiHalo": "#EDE9FE"
+          },
+          "Bicycle Shops": {
+            "route": "#0F766E",
+            "selected": "#134E4A",
+            "poi": "#0F766E",
+            "poiText": "#134E4A",
+            "poiHalo": "#CCFBF1"
+          }
+        }
+      }
+    },
+    "attribution": {
+      "message": "Map by",
+      "sourceLabel": "Jonathan Hiew",
+      "sourceUrl": "https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html"
+    }
+  }
+]

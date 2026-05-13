@@ -57,60 +57,142 @@ const testState = vi.hoisted(() => {
   };
 });
 
-vi.mock('../config/mymaps-overlays.json', () => ({
+vi.mock('../config/overlay-sources.json', () => ({
   default: [
     {
+      id: 'official-pcn',
+      label: 'PCN',
+      sourceKind: 'data-gov-sg',
+      featureAdapter: 'pcn',
+      defaultVisible: true,
+      description: 'Official NParks park connector routes.',
+      asset: {
+        geoJson: 'src/assets/pcn.geojson',
+        metadata: 'src/assets/pcn-metadata.json'
+      },
+      sync: {
+        datasetId: 'pcn-dataset',
+        datasetTitle: 'Park Connector Loop',
+        agency: 'NParks',
+        minFeatureCount: 100
+      },
+      presentation: {
+        routeColor: '#2FA66A',
+        selectedColor: '#526072',
+        activeBackgroundColor: '#DCFCE7',
+        activeTextColor: '#166534'
+      }
+    },
+    {
+      id: 'official-cycling-path',
+      label: 'Cycling Path',
+      sourceKind: 'data-gov-sg',
+      featureAdapter: 'cycling-path',
+      defaultVisible: true,
+      description: 'Official LTA cycling path routes.',
+      asset: {
+        geoJson: 'src/assets/cycling-paths.geojson',
+        metadata: 'src/assets/cycling-paths-metadata.json'
+      },
+      sync: {
+        datasetId: 'cycling-dataset',
+        datasetTitle: 'Cycling Path Network (GEOJSON)',
+        agency: 'LTA',
+        minFeatureCount: 100
+      },
+      presentation: {
+        routeColor: '#BE93D4',
+        selectedColor: '#526072',
+        activeBackgroundColor: '#F3E8FF',
+        activeTextColor: '#6B21A8'
+      }
+    },
+    {
       id: 'jonathan-route',
-      name: 'Jonathan Route',
-      sourceUrl: 'https://example.com/cycling.kml',
+      label: 'Jonathan Route',
+      sourceKind: 'google-my-maps',
+      featureAdapter: 'my-maps',
       defaultVisible: false,
-      hiddenLayerNames: ['PCN', 'Cycling Path Network'],
+      description: 'Jonathan Route Google My Maps layer.',
+      asset: {
+        geoJson: 'src/assets/curated-routes.geojson',
+        metadata: 'src/assets/curated-routes-metadata.json'
+      },
+      sync: {
+        sourceUrl: 'https://example.com/cycling.kml'
+      },
+      presentation: {
+        routeColor: '#F97316',
+        selectedColor: '#7C2D12',
+        activeBackgroundColor: '#FFF7ED',
+        activeTextColor: '#7C2D12'
+      },
       attribution: {
         message: 'Map provided by Jonathan Hiew.',
         sourceLabel: 'Source',
         sourceUrl: 'https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html'
       },
-      layerColors: {
-        default: {
-          route: '#F97316',
-          selected: '#7C2D12',
-          poi: '#F97316',
-          poiText: '#7C2D12',
-          poiHalo: '#FFF7ED'
-        },
-        byLayerName: {
-          POIs: {
-            route: '#0F766E',
-            selected: '#134E4A',
-            poi: '#0F766E',
-            poiText: '#134E4A',
-            poiHalo: '#CCFBF1'
+      layerRules: {
+        hiddenLayerNames: ['PCN', 'Cycling Path Network'],
+        colors: {
+          default: {
+            route: '#F97316',
+            selected: '#7C2D12',
+            poi: '#F97316',
+            poiText: '#7C2D12',
+            poiHalo: '#FFF7ED'
+          },
+          byLayerName: {
+            POIs: {
+              route: '#0F766E',
+              selected: '#134E4A',
+              poi: '#0F766E',
+              poiText: '#134E4A',
+              poiHalo: '#CCFBF1'
+            }
           }
         }
       }
     },
     {
       id: 'food-stops',
-      name: 'Food Stops',
-      sourceUrl: 'https://example.com/food.kml',
+      label: 'Food Stops',
+      sourceKind: 'google-my-maps',
+      featureAdapter: 'my-maps',
       defaultVisible: false,
-      layerColors: {
-        default: {
-          route: '#2563EB',
-          selected: '#1E3A8A',
-          poi: '#2563EB',
-          poiText: '#1E3A8A',
-          poiHalo: '#DBEAFE'
-        },
-        byLayerName: {
-          'Food POIs': {
-            route: '#16A34A',
-            selected: '#166534',
-            poi: '#16A34A',
-            poiText: '#166534',
-            poiHalo: '#DCFCE7'
+      description: 'Food Stops Google My Maps layer.',
+      asset: {
+        geoJson: 'src/assets/curated-routes.geojson',
+        metadata: 'src/assets/curated-routes-metadata.json'
+      },
+      sync: {
+        sourceUrl: 'https://example.com/food.kml'
+      },
+      presentation: {
+        routeColor: '#2563EB',
+        selectedColor: '#1E3A8A',
+        activeBackgroundColor: '#DBEAFE',
+        activeTextColor: '#1E3A8A'
+      },
+      layerRules: {
+        colors: {
+          default: {
+            route: '#2563EB',
+            selected: '#1E3A8A',
+            poi: '#2563EB',
+            poiText: '#1E3A8A',
+            poiHalo: '#DBEAFE'
+          },
+          byLayerName: {
+            'Food POIs': {
+              route: '#16A34A',
+              selected: '#166534',
+              poi: '#16A34A',
+              poiText: '#166534',
+              poiHalo: '#DCFCE7'
+            }
           }
-        }
+        },
       }
     }
   ]
