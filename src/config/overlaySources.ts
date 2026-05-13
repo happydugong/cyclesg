@@ -6,8 +6,8 @@ import type { CyclingPathGeoJson } from '../types/cyclingPath';
 import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
 import type { PcnGeoJson } from '../types/pcn';
 
-export type OverlaySourceKind = 'data-gov-sg' | 'google-my-maps';
-export type FeatureAdapter = 'pcn' | 'cycling-path' | 'my-maps';
+export type OverlaySourceKind = 'data-gov-sg' | 'google-my-maps' | 'local-file';
+export type FeatureAdapter = 'pcn' | 'cycling-path' | 'my-maps' | 'strava-gpx';
 
 export interface OverlaySourceAttribution {
   message?: string;
@@ -89,7 +89,16 @@ export interface MyMapsOverlaySourceConfig extends OverlaySourceConfigBase {
   layerRules?: MyMapsLayerRules;
 }
 
-export type OverlaySourceConfig = DataGovOverlaySourceConfig | MyMapsOverlaySourceConfig;
+export interface LocalFileOverlaySourceConfig extends OverlaySourceConfigBase {
+  sourceKind: 'local-file';
+  featureAdapter: 'strava-gpx';
+  layerRules?: MyMapsLayerRules;
+}
+
+export type OverlaySourceConfig =
+  | DataGovOverlaySourceConfig
+  | MyMapsOverlaySourceConfig
+  | LocalFileOverlaySourceConfig;
 export type OverlaySourceGeoJson = PcnGeoJson | CyclingPathGeoJson | CuratedRoutesGeoJson;
 
 export const OVERLAY_SOURCES = overlaySourcesJson as OverlaySourceConfig[];
@@ -98,6 +107,12 @@ export function isMyMapsOverlaySource(
   source: OverlaySourceConfig
 ): source is MyMapsOverlaySourceConfig {
   return source.sourceKind === 'google-my-maps';
+}
+
+export function isCuratedFileOverlaySource(
+  source: OverlaySourceConfig
+): source is LocalFileOverlaySourceConfig {
+  return source.sourceKind === 'local-file';
 }
 
 export function isDataGovOverlaySource(
@@ -119,6 +134,7 @@ export async function loadOverlaySourceGeoJson(
     case 'cycling-path':
       return loadCyclingPathGeoJson();
     case 'my-maps':
-      return loadCuratedRoutesGeoJson();
+    case 'strava-gpx':
+      return loadCuratedRoutesGeoJson(source.asset.geoJson);
   }
 }

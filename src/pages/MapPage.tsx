@@ -12,6 +12,8 @@ import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
 import { SelectedRouteCard } from '../components/SelectedRouteCard';
 import {
   OVERLAY_SOURCES,
+  isCuratedFileOverlaySource,
+  isDataGovOverlaySource,
   loadOverlaySourceGeoJson,
   type OverlaySourceConfig,
   type OverlaySourceGeoJson
@@ -73,8 +75,29 @@ function getOverlayLoadErrorMessage(source: OverlaySourceConfig) {
     case 'cycling-path':
       return 'Unable to load cycling path overlays.';
     case 'my-maps':
+    case 'strava-gpx':
       return 'Unable to load curated route overlays.';
   }
+}
+
+function getOverlaySection(source: OverlaySourceConfig, contentType: ReturnType<typeof getOverlayContentType>) {
+  if (isDataGovOverlaySource(source)) {
+    return 'routes' as const;
+  }
+
+  if (isCuratedFileOverlaySource(source) || source.sourceKind === 'google-my-maps') {
+    if (contentType === 'route') {
+      return 'curated-routes' as const;
+    }
+
+    if (contentType === 'poi') {
+      return 'pois' as const;
+    }
+
+    return 'others' as const;
+  }
+
+  return contentType === 'poi' ? 'pois' : 'others';
 }
 
 function createInitialOverlayStates(): OverlaySourceState[] {
@@ -185,6 +208,7 @@ export function MapPage() {
         id: overlayLayer.id,
         label: overlayLayer.label,
         contentType: getOverlayContentType(overlayLayer),
+        section: getOverlaySection(overlayLayer.source, getOverlayContentType(overlayLayer)),
         defaultVisible: overlayLayer.defaultVisible,
         description: overlayLayer.description,
         indicatorColor:
@@ -593,7 +617,7 @@ export function MapPage() {
           ))
         : null}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start p-4">
+      <div className="pointer-events-none absolute inset-x-0 top-6 sm:top-0 z-10 flex items-start p-4">
         <div className="rounded-[22px] border border-white/15 bg-slate-950/55 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur-md">
           <div>CycleSG</div>
         </div>

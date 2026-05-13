@@ -3,11 +3,13 @@ import { Settings } from './icons/Settings';
 import { LayerControlSheetContent } from './LayerControlSheetContent';
 
 export type OverlayContentType = 'route' | 'poi' | 'route-poi';
+export type OverlaySection = 'curated-routes' | 'routes' | 'pois' | 'others';
 
 export interface OverlayControlItem {
   id: string;
   label: string;
   contentType: OverlayContentType;
+  section: OverlaySection;
   defaultVisible: boolean;
   description: string;
   indicatorColor: string;
@@ -233,7 +235,7 @@ export function LayerControlSheet({
   return (
     <>
       {shouldShowDesktopTrigger ? (
-        <div className="pointer-events-none absolute bottom-12 right-8 z-10">
+        <div className="pointer-events-none absolute bottom-12 right-4 z-10 sm:right-8">
           <button
             type="button"
             onClick={toggleSheet}
@@ -247,7 +249,7 @@ export function LayerControlSheet({
       ) : null}
 
       {shouldShowMobileTrigger ? (
-        <div className="pointer-events-none absolute bottom-4 right-4 z-10">
+        <div className="pointer-events-none absolute bottom-14 right-4 z-10">
           <button
             type="button"
             onClick={toggleSheet}
@@ -280,7 +282,7 @@ export function LayerControlSheet({
       ) : null}
 
       {shouldShowMobilePanel ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-4">
+          <div className="pointer-events-none absolute inset-x-0 bottom-6 sm:bottom-0 z-10 px-4 pb-4">
             <div
               className={`pointer-events-auto mx-auto flex w-full max-w-[32rem] flex-col overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/70 text-slate-100 shadow-floating backdrop-blur-md will-change-transform transition-[transform,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
                 isMobileSheetVisible

@@ -1,0 +1,21 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-13T16:11:21.434Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "lion-head-ride",
+      "name": "Merlion's Head",
+      "sourcePath": "data/gpx/Lion_Head_Ride.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0,
+      "routeLength": 38000,
+      "routeLengthKm": 38
+    }
+  ],
+  "routeLength": 38000,
+  "routeLengthKm": 38
+}

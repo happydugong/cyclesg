@@ -1,0 +1,21 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-13T16:11:11.953Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "dino-east-loop",
+      "name": "T-Rex",
+      "sourcePath": "data/gpx/Dino East Loop.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0,
+      "routeLength": 125000,
+      "routeLengthKm": 125
+    }
+  ],
+  "routeLength": 125000,
+  "routeLengthKm": 125
+}

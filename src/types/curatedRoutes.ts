@@ -4,7 +4,7 @@ export interface CuratedRoutesProperties {
   featureId: string;
   overlayId: string;
   overlayName: string;
-  sourceType: 'google-my-maps';
+  sourceType: 'google-my-maps' | 'gpx';
   name: string;
   description: string | null;
   layerName: string | null;
@@ -14,6 +14,7 @@ export interface CuratedRoutesProperties {
   iconHref: string | null;
   poiIconHref?: string | null;
   poiIconId?: string | null;
+  routeLength?: number | string | null;
   strokeColor: string | null;
   strokeWidth: number | null;
 }

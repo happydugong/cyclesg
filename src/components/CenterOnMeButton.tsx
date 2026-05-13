@@ -20,7 +20,7 @@ export function CenterOnMeButton({
       disabled={disabled}
       aria-label={isFollowing ? 'Following current location' : 'Center map on current location'}
       aria-pressed={isFollowing}
-      className={`absolute bottom-20 right-4 z-20 h-14 w-14 items-center justify-center rounded-full border text-white shadow-floating backdrop-blur transition-all duration-200 ease-out motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50 sm:flex md:bottom-28 md:right-8 ${
+      className={`absolute bottom-32 right-4 z-20 h-14 w-14 items-center justify-center rounded-full border text-white shadow-floating backdrop-blur transition-color duration-200 ease-out motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-28 sm:right-8 sm:flex ${
         hideOnMobile ? 'hidden' : 'flex'
       } ${
         isFollowing

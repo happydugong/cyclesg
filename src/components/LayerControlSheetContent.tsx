@@ -26,15 +26,19 @@ export function LayerControlSheetContent({
   onToggle
 }: LayerControlSheetContentProps) {
   const routeItems = useMemo(
-    () => items.filter((item) => item.contentType === 'route'),
+    () => items.filter((item) => item.section === 'routes'),
+    [items]
+  );
+  const curatedRouteItems = useMemo(
+    () => items.filter((item) => item.section === 'curated-routes'),
     [items]
   );
   const poiItems = useMemo(
-    () => items.filter((item) => item.contentType === 'poi'),
+    () => items.filter((item) => item.section === 'pois'),
     [items]
   );
   const otherItems = useMemo(
-    () => items.filter((item) => item.contentType !== 'poi' && item.contentType !== 'route'),
+    () => items.filter((item) => item.section === 'others'),
     [items]
   );
 
@@ -130,6 +134,14 @@ export function LayerControlSheetContent({
             </p>
             <div className="space-y-2">{renderItems(routeItems)}</div>
           </section>
+          {curatedRouteItems.length > 0 ? (
+            <section>
+              <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
+                Curated Routes
+              </p>
+              <div className="space-y-2">{renderItems(curatedRouteItems)}</div>
+            </section>
+          ) : null}
           {poiItems.length > 0 ? (
             <section>
               <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">

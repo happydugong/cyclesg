@@ -1,4 +1,5 @@
 import {
+  isCuratedFileOverlaySource,
   isDataGovOverlaySource,
   isMyMapsOverlaySource,
   type OverlaySourceConfig
@@ -26,7 +27,7 @@ export function buildOverlayLayerViewModels(
   return overlaySources.flatMap((source) => {
     const data = overlayDataBySourceId.get(source.id) ?? null;
 
-    if (isMyMapsOverlaySource(source)) {
+    if (isMyMapsOverlaySource(source) || isCuratedFileOverlaySource(source)) {
       return buildMyMapsOverlayLayerViewModels(source, data as CuratedRoutesGeoJson | null);
     }
 

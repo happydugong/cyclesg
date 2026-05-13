@@ -31,16 +31,23 @@ export function SelectedRouteCard({
     return null;
   }
 
+  const formattedRouteLength =
+    route.routeLength === null
+      ? null
+      : route.routeLength >= 1000
+        ? `${Number((route.routeLength / 1000).toFixed(route.routeLength % 1000 === 0 ? 0 : 1))}km mapped length`
+        : `${Math.round(route.routeLength)}m mapped length`;
+
   const isPoi = route.routeType === 'curated-poi';
+  const isCuratedOverlay =
+    route.routeSource === 'curated-my-maps' || route.routeType === 'curated-poi';
   const details = [
     `${isPoi ? 'POI' : 'Segment'} ID ${route.routeId}`,
     isPoi
       ? null
-      : route.routeLength !== null
-        ? `${Math.round(route.routeLength)}m mapped length`
-        : 'Length unavailable',
-    route.layerName,
-    route.overlayName
+      : formattedRouteLength ?? 'Length unavailable',
+    isCuratedOverlay ? null : route.layerName,
+    isCuratedOverlay ? null : route.overlayName
   ].filter((detail): detail is string => Boolean(detail));
 
   return (

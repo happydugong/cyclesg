@@ -13,13 +13,14 @@ function validateCommonConfig(source) {
   assert(typeof source.id === 'string' && source.id.length > 0, 'Each overlay source must have an id.');
   assert(typeof source.label === 'string' && source.label.length > 0, `Overlay source ${source.id} must have a label.`);
   assert(
-    source.sourceKind === 'data-gov-sg' || source.sourceKind === 'google-my-maps',
+    source.sourceKind === 'data-gov-sg' || source.sourceKind === 'google-my-maps' || source.sourceKind === 'local-file',
     `Overlay source ${source.id} has an unsupported sourceKind.`
   );
   assert(
     source.featureAdapter === 'pcn' ||
       source.featureAdapter === 'cycling-path' ||
-      source.featureAdapter === 'my-maps',
+      source.featureAdapter === 'my-maps' ||
+      source.featureAdapter === 'strava-gpx',
     `Overlay source ${source.id} has an unsupported featureAdapter.`
   );
   assert(typeof source.defaultVisible === 'boolean', `Overlay source ${source.id} must define defaultVisible.`);
@@ -67,6 +68,14 @@ function validateMyMapsConfig(source) {
   );
 }
 
+function validateLocalFileConfig(source) {
+  assert(source.sourceKind === 'local-file', `Overlay source ${source.id} must be a local file source.`);
+  assert(
+    source.featureAdapter === 'strava-gpx',
+    `Overlay source ${source.id} must use the strava-gpx adapter.`
+  );
+}
+
 export async function loadOverlaySourceConfigs(configPath = CONFIG_PATH) {
   const configText = await readFile(configPath, 'utf8');
   const sources = JSON.parse(configText);
@@ -97,6 +106,17 @@ export async function loadMyMapsOverlaySourceConfigs(configPath = CONFIG_PATH) {
 
   for (const source of filteredSources) {
     validateMyMapsConfig(source);
+  }
+
+  return filteredSources;
+}
+
+export async function loadLocalFileOverlaySourceConfigs(configPath = CONFIG_PATH) {
+  const sources = await loadOverlaySourceConfigs(configPath);
+  const filteredSources = sources.filter((source) => source.sourceKind === 'local-file');
+
+  for (const source of filteredSources) {
+    validateLocalFileConfig(source);
   }
 
   return filteredSources;

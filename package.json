@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "convert:gpx": "node ./scripts/convert-gpx-to-geojson.mjs",
     "sync:pcn": "node ./scripts/sync-pcn.mjs",
     "sync:curated-routes": "node ./scripts/sync-curated-routes.mjs"
   },

@@ -1,5 +1,6 @@
 import type {
   CuratedLayerColors,
+  LocalFileOverlaySourceConfig,
   MyMapsOverlaySourceConfig
 } from '../../config/overlaySources';
 import type { CuratedRoutesGeoJson } from '../../types/curatedRoutes';
@@ -10,6 +11,8 @@ import {
   type OverlayLayerViewModel
 } from './overlayRuntime';
 
+type CuratedOverlaySourceConfig = MyMapsOverlaySourceConfig | LocalFileOverlaySourceConfig;
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -19,7 +22,7 @@ function slugify(value: string) {
 }
 
 function getConfiguredLayerColors(
-  overlay: MyMapsOverlaySourceConfig,
+  overlay: CuratedOverlaySourceConfig,
   layerName: string
 ): CuratedLayerColors {
   if (!overlay.layerRules?.colors?.default) {
@@ -29,7 +32,7 @@ function getConfiguredLayerColors(
   return overlay.layerRules.colors.byLayerName?.[layerName] ?? overlay.layerRules.colors.default;
 }
 
-function getConfiguredPoiIconScale(overlay: MyMapsOverlaySourceConfig, layerName: string) {
+function getConfiguredPoiIconScale(overlay: CuratedOverlaySourceConfig, layerName: string) {
   return (
     overlay.layerRules?.poiIconScales?.byLayerName?.[layerName] ??
     overlay.layerRules?.poiIconScales?.default ??
@@ -60,7 +63,7 @@ function resolveConfiguredIconHref(iconHref: string) {
 }
 
 function getConfiguredPoiIconHref(
-  overlay: MyMapsOverlaySourceConfig,
+  overlay: CuratedOverlaySourceConfig,
   feature: CuratedRoutesGeoJson['features'][number],
   layerName: string
 ) {
@@ -91,7 +94,7 @@ function isLineFeature(
 
 function buildCuratedRouteGeoJson(
   curatedRoutesData: CuratedRoutesGeoJson | null,
-  overlay: MyMapsOverlaySourceConfig,
+  overlay: CuratedOverlaySourceConfig,
   overlayLayerId: string,
   layerName: string
 ): UnifiedRouteGeoJson | null {
@@ -111,7 +114,12 @@ function buildCuratedRouteGeoJson(
         routeSource: 'curated-my-maps' as const,
         routeName: feature.properties.name,
         routeGroup: feature.properties.layerName ?? `${overlay.label} route`,
-        routeLength: null,
+        routeLength:
+          typeof feature.properties.routeLength === 'number'
+            ? feature.properties.routeLength
+            : feature.properties.routeLength
+              ? Number(feature.properties.routeLength)
+              : null,
         description: feature.properties.description,
         layerName: feature.properties.layerName,
         overlayId: feature.properties.overlayId,
@@ -130,7 +138,7 @@ function buildCuratedRouteGeoJson(
 
 function buildCuratedPoiGeoJson(
   curatedRoutesData: CuratedRoutesGeoJson | null,
-  overlay: MyMapsOverlaySourceConfig,
+  overlay: CuratedOverlaySourceConfig,
   layerName: string
 ): CuratedRoutesGeoJson | null {
   if (!curatedRoutesData) {
@@ -163,7 +171,7 @@ function buildCuratedPoiGeoJson(
 }
 
 export function buildMyMapsOverlayLayerViewModels(
-  source: MyMapsOverlaySourceConfig,
+  source: CuratedOverlaySourceConfig,
   data: CuratedRoutesGeoJson | null
 ): OverlayLayerViewModel[] {
   if (!data) {

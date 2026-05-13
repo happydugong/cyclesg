@@ -68,7 +68,10 @@
       "activeTextColor": "#7C2D12"
     },
     "layerRules": {
-      "hiddenLayerNames": ["PCN", "Cycling Path Network"],
+      "hiddenLayerNames": [
+        "PCN",
+        "Cycling Path Network"
+      ],
       "poiIcons": {
         "byLayerName": {
           "Bicycle Shops": "/poi-icons/bicycle-shop.svg"
@@ -117,11 +120,11 @@
             "poiHalo": "#FEE2E2"
           },
           "Danger Areas": {
-            "route": "#7C3AED",
-            "selected": "#5B21B6",
-            "poi": "#7C3AED",
-            "poiText": "#5B21B6",
-            "poiHalo": "#EDE9FE"
+            "route": "#DC2626",
+            "selected": "#991B1B",
+            "poi": "#DC2626",
+            "poiText": "#991B1B",
+            "poiHalo": "#FEE2E2"
           },
           "Bicycle Shops": {
             "route": "#0F766E",
@@ -137,6 +140,312 @@
       "message": "Map by",
       "sourceLabel": "Jonathan Hiew",
       "sourceUrl": "https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html"
+    }
+  },
+  {
+    "id": "cny-rabbit-route",
+    "label": "Rabbit",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a rabbit shape.",
+    "asset": {
+      "geoJson": "src/assets/cny-rabbit-route.geojson",
+      "metadata": "src/assets/cny-rabbit-route-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#EA580C",
+      "selectedColor": "#9A3412",
+      "activeBackgroundColor": "#FFEDD5",
+      "activeTextColor": "#9A3412"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#EA580C",
+          "selected": "#9A3412",
+          "poi": "#EA580C",
+          "poiText": "#9A3412",
+          "poiHalo": "#FFEDD5"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Mapometer",
+      "sourceUrl": "https://sg.mapometer.com/cycling/route_5425400"
+    }
+  },
+  {
+    "id": "crocodile-ride",
+    "label": "Crocodile",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a crocodile shape.",
+    "asset": {
+      "geoJson": "src/assets/Crocodile_Ride.geojson",
+      "metadata": "src/assets/Crocodile_Ride-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#15803D",
+      "selectedColor": "#14532D",
+      "activeBackgroundColor": "#DCFCE7",
+      "activeTextColor": "#14532D"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#15803D",
+          "selected": "#14532D",
+          "poi": "#15803D",
+          "poiText": "#14532D",
+          "poiHalo": "#DCFCE7"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/5974894424"
+    }
+  },
+  {
+    "id": "dino-east-loop",
+    "label": "T-Rex",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a T-Rex shape.",
+    "asset": {
+      "geoJson": "src/assets/Dino East Loop.geojson",
+      "metadata": "src/assets/Dino East Loop-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#2563EB",
+      "selectedColor": "#1D4ED8",
+      "activeBackgroundColor": "#DBEAFE",
+      "activeTextColor": "#1E3A8A"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#2563EB",
+          "selected": "#1D4ED8",
+          "poi": "#2563EB",
+          "poiText": "#1E3A8A",
+          "poiHalo": "#DBEAFE"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/routes/2849675869311752650"
+    }
+  },
+  {
+    "id": "godzilla-strava-art-2",
+    "label": "Godzilla",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a Godzilla shape.",
+    "asset": {
+      "geoJson": "src/assets/Godzilla_Strava_Art_2.geojson",
+      "metadata": "src/assets/Godzilla_Strava_Art_2-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#7C3AED",
+      "selectedColor": "#5B21B6",
+      "activeBackgroundColor": "#EDE9FE",
+      "activeTextColor": "#5B21B6"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#7C3AED",
+          "selected": "#5B21B6",
+          "poi": "#7C3AED",
+          "poiText": "#5B21B6",
+          "poiHalo": "#EDE9FE"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/6087758378"
+    }
+  },
+  {
+    "id": "group-drawing-for-sea-horse",
+    "label": "Seahorse",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a seahorse shape.",
+    "asset": {
+      "geoJson": "src/assets/Group_drawing_for_Sea_horse_.geojson",
+      "metadata": "src/assets/Group_drawing_for_Sea_horse_-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#0F766E",
+      "selectedColor": "#134E4A",
+      "activeBackgroundColor": "#CCFBF1",
+      "activeTextColor": "#134E4A"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#0F766E",
+          "selected": "#134E4A",
+          "poi": "#0F766E",
+          "poiText": "#134E4A",
+          "poiHalo": "#CCFBF1"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/6160725894"
+    }
+  },
+  {
+    "id": "lion-head-ride",
+    "label": "Merlion's Head",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a Merlion's Head silhouette.",
+    "asset": {
+      "geoJson": "src/assets/Lion_Head_Ride.geojson",
+      "metadata": "src/assets/Lion_Head_Ride-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#CA8A04",
+      "selectedColor": "#854D0E",
+      "activeBackgroundColor": "#FEF9C3",
+      "activeTextColor": "#854D0E"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#CA8A04",
+          "selected": "#854D0E",
+          "poi": "#CA8A04",
+          "poiText": "#854D0E",
+          "poiHalo": "#FEF9C3"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/5708623350"
+    }
+  },
+  {
+    "id": "my-fat-little",
+    "label": "Pig",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a pig shape.",
+    "asset": {
+      "geoJson": "src/assets/My_Fat_Little_.geojson",
+      "metadata": "src/assets/My_Fat_Little_-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#DB2777",
+      "selectedColor": "#9D174D",
+      "activeBackgroundColor": "#FCE7F3",
+      "activeTextColor": "#9D174D"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#DB2777",
+          "selected": "#9D174D",
+          "poi": "#DB2777",
+          "poiText": "#9D174D",
+          "poiHalo": "#FCE7F3"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/5949567081"
+    }
+  },
+  {
+    "id": "rawrsome-ride-baby-d-mommy-d",
+    "label": "Baby & Mummy T-Rex",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces baby and mummy T-Rex shapes.",
+    "asset": {
+      "geoJson": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_.geojson",
+      "metadata": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#16A34A",
+      "selectedColor": "#166534",
+      "activeBackgroundColor": "#DCFCE7",
+      "activeTextColor": "#166534"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#16A34A",
+          "selected": "#166534",
+          "poi": "#16A34A",
+          "poiText": "#166534",
+          "poiHalo": "#DCFCE7"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/5708579902"
+    }
+  },
+  {
+    "id": "santa-claus-ride",
+    "label": "Santa Claus",
+    "sourceKind": "local-file",
+    "featureAdapter": "strava-gpx",
+    "defaultVisible": false,
+    "description": "Route that traces a Santa Claus shape.",
+    "asset": {
+      "geoJson": "src/assets/Santa_Claus_Ride.geojson",
+      "metadata": "src/assets/Santa_Claus_Ride-metadata.json"
+    },
+    "presentation": {
+      "routeColor": "#DC2626",
+      "selectedColor": "#991B1B",
+      "activeBackgroundColor": "#FEE2E2",
+      "activeTextColor": "#991B1B"
+    },
+    "layerRules": {
+      "colors": {
+        "default": {
+          "route": "#DC2626",
+          "selected": "#991B1B",
+          "poi": "#DC2626",
+          "poiText": "#991B1B",
+          "poiHalo": "#FEE2E2"
+        }
+      }
+    },
+    "attribution": {
+      "message": "Original route on",
+      "sourceLabel": "Strava",
+      "sourceUrl": "https://www.strava.com/activities/6404350298"
     }
   }
 ]

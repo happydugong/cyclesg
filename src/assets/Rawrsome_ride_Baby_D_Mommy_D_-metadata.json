@@ -1,0 +1,21 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-13T16:11:27.876Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "rawrsome-ride-baby-d-mommy-d",
+      "name": "Baby & Mummy T-Rex",
+      "sourcePath": "data/gpx/Rawrsome_ride_Baby_D_Mommy_D_.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0,
+      "routeLength": 144000,
+      "routeLengthKm": 144
+    }
+  ],
+  "routeLength": 144000,
+  "routeLengthKm": 144
+}
