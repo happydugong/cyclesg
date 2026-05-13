@@ -142,16 +142,14 @@ export function CuratedPoiLayer({
     const loadConfiguredIcons = () => {
       void Promise.all(
         configuredIcons.map(async (icon) => {
-          if (map.hasImage(icon.id)) {
-            return;
-          }
-
-          const image = shouldLoadAsSvgImage(icon.href)
-            ? { data: await loadSvgRasterImage(icon.href) }
-            : await map.loadImage(icon.href);
-
           if (!map.hasImage(icon.id)) {
-            map.addImage(icon.id, image.data);
+            const image = shouldLoadAsSvgImage(icon.href)
+              ? { data: await loadSvgRasterImage(icon.href) }
+              : await map.loadImage(icon.href);
+
+            if (!map.hasImage(icon.id)) {
+              map.addImage(icon.id, image.data);
+            }
           }
 
           loadedIconIds.add(icon.id);
