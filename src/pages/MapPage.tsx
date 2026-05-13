@@ -96,7 +96,7 @@ function updateOverlayState(
 }
 
 export function MapPage() {
-  const authorUrl = 'https://huishun98.github.io/';
+  const authorUrl = 'https://happyhuishun.github.io/';
   const repositoryUrl = 'https://github.com/huishun98/cyclesg';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);

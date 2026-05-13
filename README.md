@@ -138,7 +138,7 @@ Then open the site and confirm requests to `googletagmanager.com` in the browser
 
 ### 5. Deploy
 
-Set `VITE_GA_MEASUREMENT_ID` in your hosting provider's build environment as well, then rebuild the app.
+For GitHub Pages, add a repository secret named `VITE_GA_MEASUREMENT_ID` in `Settings > Secrets and variables > Actions`, then redeploy the `Deploy GitHub Pages` workflow.
 
 ## PWA notes
 

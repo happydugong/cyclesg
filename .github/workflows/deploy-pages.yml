@@ -44,6 +44,7 @@ jobs:
         run: pnpm build
         env:
           VITE_BASE_PATH: /cyclesg/
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
