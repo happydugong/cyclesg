@@ -30,6 +30,7 @@ import {
   getRoutePresentation,
   isUnifiedRouteFeature,
   loadOverlayData,
+  normalizeCuratedPoiProperties,
   normalizeUnifiedRouteProperties,
   type MyMapsOverlayConfig,
   type MyMapsOverlayLayerViewModel,
@@ -96,6 +97,15 @@ export function MapPage() {
   const clearSelectedRoute = useCallback(() => {
     setSelectedRoute(null);
   }, []);
+  const selectCuratedPoi = useCallback(
+    (
+      properties: CuratedRoutesGeoJson['features'][number]['properties'],
+      overlayLayerId: string
+    ) => {
+      setSelectedRoute(normalizeCuratedPoiProperties(properties, overlayLayerId));
+    },
+    []
+  );
   const showFollowNotice = useCallback((message: string) => {
     setFollowNotice(message);
     setIsFollowNoticeVisible(true);
@@ -232,7 +242,33 @@ export function MapPage() {
       ),
     [isOverlayLayerVisible, myMapsOverlayLayerViewModels]
   );
-  const displayedRoutePresentation = displayedRoute ? getRoutePresentation(displayedRoute) : null;
+  const displayedRoutePresentation = useMemo(() => {
+    if (!displayedRoute) {
+      return null;
+    }
+
+    const presentation = getRoutePresentation(displayedRoute);
+
+    if (!displayedRoute.overlayLayerId) {
+      return presentation;
+    }
+
+    const overlayLayer = myMapsOverlayLayerViewModels.find(
+      (layer) => layer.id === displayedRoute.overlayLayerId
+    );
+
+    if (!overlayLayer) {
+      return presentation;
+    }
+
+    return {
+      ...presentation,
+      color:
+        displayedRoute.routeType === 'curated-poi'
+          ? overlayLayer.colors.poi
+          : overlayLayer.colors.route
+    };
+  }, [displayedRoute, myMapsOverlayLayerViewModels]);
   const displayedRouteOverlayConfig = useMemo(
     () =>
       displayedRoute?.overlayId
@@ -249,6 +285,10 @@ export function MapPage() {
           ? !current[overlayLayerId]
           : !defaultVisible
     }));
+  }, []);
+  const openLayerPanel = useCallback(() => {
+    setSelectedRoute(null);
+    setIsLayerPanelOpen(true);
   }, []);
 
   useEffect(() => {
@@ -498,6 +538,7 @@ export function MapPage() {
           overlayLayer.routeLayerIds.hitArea,
           overlayLayer.routeLayerIds.selected,
           overlayLayer.poiLayerIds.circle,
+          overlayLayer.poiLayerIds.icon,
           overlayLayer.poiLayerIds.label
         ])
       ];
@@ -575,8 +616,13 @@ export function MapPage() {
                 data={overlayLayer.poiData}
                 ids={overlayLayer.poiLayerIds}
                 map={mapRef.current}
+                onClearSelection={clearSelectedRoute}
+                onSelect={(properties) => {
+                  selectCuratedPoi(properties, overlayLayer.id);
+                }}
                 palette={{
                   circleColor: overlayLayer.colors.poi,
+                  iconScale: overlayLayer.iconScale,
                   textColor: overlayLayer.colors.poiText,
                   textHaloColor: overlayLayer.colors.poiHalo
                 }}
@@ -592,16 +638,15 @@ export function MapPage() {
         </div>
       </div>
 
-      {!displayedRoute ? (
-        <LayerControlSheet
-          items={overlayPills}
-          isOpen={isLayerPanelOpen}
-          isVisible={isOverlayLayerVisible}
-          onClose={() => setIsLayerPanelOpen(false)}
-          onOpen={() => setIsLayerPanelOpen(true)}
-          onToggle={toggleOverlayVisibility}
-        />
-      ) : null}
+      <LayerControlSheet
+        items={overlayPills}
+        isOpen={isLayerPanelOpen}
+        isVisible={isOverlayLayerVisible}
+        hideMobileTrigger={Boolean(displayedRoute)}
+        onClose={() => setIsLayerPanelOpen(false)}
+        onOpen={openLayerPanel}
+        onToggle={toggleOverlayVisibility}
+      />
 
       <SelectedRouteCard
         authorUrl={authorUrl}
@@ -623,8 +668,8 @@ export function MapPage() {
 
       <CenterOnMeButton
         disabled={!geolocation.location}
+        hideOnMobile={isLayerPanelOpen || Boolean(displayedRoute)}
         isFollowing={isFollowingUser}
-        isRaised={Boolean(displayedRoute)}
         onClick={toggleFollowUser}
       />
     </main>

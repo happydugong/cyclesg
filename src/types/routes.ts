@@ -2,7 +2,7 @@ import type { FeatureCollection, LineString, MultiLineString } from 'geojson';
 
 export interface UnifiedRouteProperties {
   routeId: string;
-  routeType: 'pcn' | 'cycling-path' | 'curated-my-maps';
+  routeType: 'pcn' | 'cycling-path' | 'curated-my-maps' | 'curated-poi';
   routeSource: 'official-pcn' | 'cycling-path' | 'curated-my-maps';
   routeName: string;
   routeGroup: string;

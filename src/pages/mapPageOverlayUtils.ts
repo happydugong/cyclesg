@@ -4,6 +4,14 @@ import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
 import type { PcnGeoJson } from '../types/pcn';
 import type { UnifiedRouteGeoJson, UnifiedRouteProperties } from '../types/routes';
 
+interface CuratedLayerColors {
+  route: string;
+  selected: string;
+  poi: string;
+  poiText: string;
+  poiHalo: string;
+}
+
 export interface MyMapsOverlayConfig {
   id: string;
   name: string;
@@ -15,12 +23,19 @@ export interface MyMapsOverlayConfig {
     sourceUrl?: string;
   };
   hiddenLayerNames?: string[];
-  colors: {
-    route: string;
-    selected: string;
-    poi: string;
-    poiText: string;
-    poiHalo: string;
+  poiIcons?: {
+    default?: string;
+    byLayerName?: Record<string, string>;
+    byName?: Record<string, string>;
+  };
+  poiIconScales?: {
+    default?: number;
+    byLayerName?: Record<string, number>;
+    byName?: Record<string, number>;
+  };
+  layerColors?: {
+    default: CuratedLayerColors;
+    byLayerName?: Record<string, CuratedLayerColors>;
   };
 }
 
@@ -28,13 +43,8 @@ export interface MyMapsOverlayLayerViewModel {
   id: string;
   label: string;
   config: MyMapsOverlayConfig;
-  colors: {
-    route: string;
-    selected: string;
-    poi: string;
-    poiText: string;
-    poiHalo: string;
-  };
+  colors: CuratedLayerColors;
+  iconScale: number;
   routeData: UnifiedRouteGeoJson | null;
   poiData: CuratedRoutesGeoJson | null;
   routeLayerIds: {
@@ -46,6 +56,7 @@ export interface MyMapsOverlayLayerViewModel {
   poiLayerIds: {
     source: string;
     circle: string;
+    icon: string;
     label: string;
   };
 }
@@ -66,51 +77,6 @@ export interface StaticOverlayViewModel {
   };
 }
 
-const CURATED_LAYER_COLOR_SETS = [
-  {
-    route: '#F97316',
-    selected: '#7C2D12',
-    poi: '#F97316',
-    poiText: '#7C2D12',
-    poiHalo: '#FFF7ED'
-  },
-  {
-    route: '#2563EB',
-    selected: '#1E3A8A',
-    poi: '#2563EB',
-    poiText: '#1E3A8A',
-    poiHalo: '#DBEAFE'
-  },
-  {
-    route: '#16A34A',
-    selected: '#166534',
-    poi: '#16A34A',
-    poiText: '#166534',
-    poiHalo: '#DCFCE7'
-  },
-  {
-    route: '#DC2626',
-    selected: '#991B1B',
-    poi: '#DC2626',
-    poiText: '#991B1B',
-    poiHalo: '#FEE2E2'
-  },
-  {
-    route: '#7C3AED',
-    selected: '#5B21B6',
-    poi: '#7C3AED',
-    poiText: '#5B21B6',
-    poiHalo: '#EDE9FE'
-  },
-  {
-    route: '#D97706',
-    selected: '#92400E',
-    poi: '#D97706',
-    poiText: '#92400E',
-    poiHalo: '#FEF3C7'
-  }
-] as const;
-
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -119,8 +85,55 @@ function slugify(value: string) {
     .slice(0, 60);
 }
 
-function getCuratedLayerColors(colorIndex: number) {
-  return CURATED_LAYER_COLOR_SETS[colorIndex % CURATED_LAYER_COLOR_SETS.length];
+function getConfiguredLayerColors(
+  overlay: MyMapsOverlayConfig,
+  layerName: string
+): CuratedLayerColors {
+  if (!overlay.layerColors?.default) {
+    throw new Error(`Missing layerColors.default for My Maps overlay "${overlay.id}".`);
+  }
+
+  return overlay.layerColors.byLayerName?.[layerName] ?? overlay.layerColors.default;
+}
+
+function getConfiguredPoiIconScale(overlay: MyMapsOverlayConfig, layerName: string) {
+  return overlay.poiIconScales?.byLayerName?.[layerName] ?? overlay.poiIconScales?.default ?? 1;
+}
+
+function getStableIconId(iconHref: string) {
+  let hash = 0;
+
+  for (let index = 0; index < iconHref.length; index += 1) {
+    hash = (hash * 31 + iconHref.charCodeAt(index)) >>> 0;
+  }
+
+  return `curated-poi-icon-${hash.toString(36)}`;
+}
+
+function resolveConfiguredIconHref(iconHref: string) {
+  if (/^(?:[a-z]+:)?\/\//i.test(iconHref) || iconHref.startsWith('data:')) {
+    return iconHref;
+  }
+
+  const baseUrl = import.meta.env.BASE_URL;
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const normalizedIconHref = iconHref.replace(/^\/+/, '');
+
+  return `${normalizedBaseUrl}${normalizedIconHref}`;
+}
+
+function getConfiguredPoiIconHref(
+  overlay: MyMapsOverlayConfig,
+  feature: CuratedRoutesGeoJson['features'][number],
+  layerName: string
+) {
+  const iconHref =
+    overlay.poiIcons?.byName?.[feature.properties.name] ??
+    overlay.poiIcons?.byLayerName?.[layerName] ??
+    overlay.poiIcons?.default ??
+    null;
+
+  return iconHref ? resolveConfiguredIconHref(iconHref) : null;
 }
 
 function isPointFeature(
@@ -237,7 +250,19 @@ function buildCuratedPoiGeoJson(
   const features = curatedRoutesData.features
     .filter((feature) => feature.properties.overlayId === overlay.id)
     .filter((feature) => (feature.properties.layerName ?? overlay.name) === layerName)
-    .filter(isPointFeature);
+    .filter(isPointFeature)
+    .map((feature) => {
+      const poiIconHref = getConfiguredPoiIconHref(overlay, feature, layerName);
+
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          poiIconHref,
+          poiIconId: poiIconHref ? getStableIconId(poiIconHref) : null
+        }
+      };
+    });
 
   return features.length > 0
     ? {
@@ -283,6 +308,25 @@ export function normalizeUnifiedRouteProperties(
   };
 }
 
+export function normalizeCuratedPoiProperties(
+  properties: CuratedRoutesGeoJson['features'][number]['properties'],
+  overlayLayerId: string
+): UnifiedRouteProperties {
+  return {
+    routeId: String(properties.featureId),
+    routeType: 'curated-poi',
+    routeSource: 'curated-my-maps',
+    routeName: String(properties.name),
+    routeGroup: String(properties.layerName ?? properties.overlayName),
+    routeLength: null,
+    description: properties.description ? String(properties.description) : null,
+    layerName: properties.layerName ? String(properties.layerName) : null,
+    overlayId: properties.overlayId ? String(properties.overlayId) : null,
+    overlayName: properties.overlayName ? String(properties.overlayName) : null,
+    overlayLayerId
+  };
+}
+
 export function getRoutePresentation(route: UnifiedRouteProperties) {
   if (route.routeSource === 'official-pcn') {
     return {
@@ -300,7 +344,7 @@ export function getRoutePresentation(route: UnifiedRouteProperties) {
 
   return {
     colorClass: 'bg-[#F97316]',
-    label: route.overlayName ?? 'Curated Routes'
+    label: route.routeType === 'curated-poi' ? 'POI' : route.overlayName ?? 'Curated Routes'
   };
 }
 
@@ -317,6 +361,7 @@ export function getOverlayPoiLayerIds(overlayLayerId: string) {
   return {
     source: `mymaps-${overlayLayerId}-pois-source`,
     circle: `mymaps-${overlayLayerId}-pois-circle-layer`,
+    icon: `mymaps-${overlayLayerId}-pois-icon-layer`,
     label: `mymaps-${overlayLayerId}-pois-label-layer`
   };
 }
@@ -348,7 +393,6 @@ export function buildMyMapsOverlayLayerViewModels(
   }
 
   const overlayLayers: MyMapsOverlayLayerViewModel[] = [];
-  let colorIndex = 0;
 
   for (const overlay of overlays) {
     const layerNames = new Set<string>();
@@ -375,13 +419,13 @@ export function buildMyMapsOverlayLayerViewModels(
         id: overlayLayerId,
         label: layerName,
         config: overlay,
-        colors: getCuratedLayerColors(colorIndex),
+        colors: getConfiguredLayerColors(overlay, layerName),
+        iconScale: getConfiguredPoiIconScale(overlay, layerName),
         routeData: buildCuratedRouteGeoJson(curatedRoutesData, overlay, overlayLayerId, layerName),
         poiData: buildCuratedPoiGeoJson(curatedRoutesData, overlay, layerName),
         routeLayerIds: getOverlayRouteLayerIds(overlayLayerId),
         poiLayerIds: getOverlayPoiLayerIds(overlayLayerId)
       });
-      colorIndex += 1;
     }
   }
 

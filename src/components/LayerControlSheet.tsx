@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Settings } from './icons/Settings';
 import { LayerControlSheetContent } from './LayerControlSheetContent';
 
 export type OverlayContentType = 'route' | 'poi' | 'route-poi';
@@ -33,6 +34,7 @@ interface LayerControlSheetProps {
   items: OverlayControlItem[];
   isOpen: boolean;
   isVisible: (item: OverlayControlItem) => boolean;
+  hideMobileTrigger?: boolean;
   onClose: () => void;
   onOpen: () => void;
   onToggle: (id: string, defaultVisible: boolean) => void;
@@ -42,6 +44,7 @@ export function LayerControlSheet({
   items,
   isOpen,
   isVisible,
+  hideMobileTrigger = false,
   onClose,
   onOpen,
   onToggle
@@ -214,40 +217,45 @@ export function LayerControlSheet({
     };
   }, [isDesktop, isOpen, onClose]);
 
-  const shouldShowDesktopTrigger = isDesktop && !isOpen;
+  const shouldShowDesktopTrigger = isDesktop;
   const shouldShowDesktopPanel = isDesktop && isDesktopPanelRendered;
-  const shouldShowMobileTrigger = !isDesktop && !isMobileSheetRendered;
+  const shouldShowMobileTrigger = !isDesktop && !isOpen && !hideMobileTrigger;
   const shouldShowMobilePanel = !isDesktop && isMobileSheetRendered;
+  const toggleSheet = () => {
+    if (isOpen) {
+      onClose();
+      return;
+    }
+
+    onOpen();
+  };
 
   return (
     <>
       {shouldShowDesktopTrigger ? (
-        <div className="pointer-events-none absolute left-4 top-20 z-10">
+        <div className="pointer-events-none absolute bottom-12 right-8 z-10">
           <button
             type="button"
-            onClick={onOpen}
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/70 px-4 py-2 text-sm text-slate-100 shadow-floating backdrop-blur-md"
-            aria-label="Open map layers"
+            onClick={toggleSheet}
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-slate-950/90 text-white shadow-floating backdrop-blur transition hover:bg-slate-900"
+            aria-label={isOpen ? 'Close map layers' : 'Open map layers'}
+            aria-pressed={isOpen}
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-slate-100/90" aria-hidden="true" />
-            <span>Layers</span>
+            <Settings />
           </button>
         </div>
       ) : null}
 
       {shouldShowMobileTrigger ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-4">
-          <div className="pointer-events-auto mx-auto flex max-w-[20rem] justify-center">
-            <button
-              type="button"
-              onClick={onOpen}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/70 px-4 py-2 text-sm text-slate-100 shadow-floating backdrop-blur-md"
-              aria-label="Open map layers"
-            >
-              <span className="h-2.5 w-2.5 rounded-full bg-slate-100/90" aria-hidden="true" />
-              <span>Layers</span>
-            </button>
-          </div>
+        <div className="pointer-events-none absolute bottom-4 right-4 z-10">
+          <button
+            type="button"
+            onClick={toggleSheet}
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-slate-950/90 text-white shadow-floating backdrop-blur transition hover:bg-slate-900"
+            aria-label="Open map layers"
+          >
+            <Settings />
+          </button>
         </div>
       ) : null}
 

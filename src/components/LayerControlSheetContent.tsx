@@ -107,9 +107,9 @@ export function LayerControlSheetContent({
       <div className="px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.08em] text-slate-300">Map Layers</p>
+            <p className="text-[10px] uppercase tracking-[0.08em] text-slate-400 dark:text-slate-300 ">Map Layers</p>
             <p className="mt-1 text-xs text-slate-400">
-              Toggle route and POI overlays. Official and My Maps layers are listed together.
+              Toggle route and POI overlays.
             </p>
           </div>
           <button

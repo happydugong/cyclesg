@@ -12,6 +12,8 @@ export interface CuratedRoutesProperties {
   styleUrl: string | null;
   styleId: string | null;
   iconHref: string | null;
+  poiIconHref?: string | null;
+  poiIconId?: string | null;
   strokeColor: string | null;
   strokeWidth: number | null;
 }

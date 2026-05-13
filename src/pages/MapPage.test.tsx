@@ -18,7 +18,7 @@ const testState = vi.hoisted(() => {
     palette: { routeColor: unknown; selectedColor: string };
   }> = [];
   const poiLayerProps: Array<{
-    ids: { circle: string; label: string };
+    ids: { circle: string; icon: string; label: string };
     palette: Record<string, string>;
   }> = [];
   const handlers = new Map<string, Set<(event?: { originalEvent?: unknown }) => void>>();
@@ -63,32 +63,54 @@ vi.mock('../config/mymaps-overlays.json', () => ({
       id: 'jonathan-route',
       name: 'Jonathan Route',
       sourceUrl: 'https://example.com/cycling.kml',
-      defaultVisible: true,
+      defaultVisible: false,
       hiddenLayerNames: ['PCN', 'Cycling Path Network'],
       attribution: {
         message: 'Map provided by Jonathan Hiew.',
         sourceLabel: 'Source',
         sourceUrl: 'https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html'
       },
-      colors: {
-        route: '#F97316',
-        selected: '#7C2D12',
-        poi: '#F97316',
-        poiText: '#7C2D12',
-        poiHalo: '#FFF7ED'
+      layerColors: {
+        default: {
+          route: '#F97316',
+          selected: '#7C2D12',
+          poi: '#F97316',
+          poiText: '#7C2D12',
+          poiHalo: '#FFF7ED'
+        },
+        byLayerName: {
+          POIs: {
+            route: '#0F766E',
+            selected: '#134E4A',
+            poi: '#0F766E',
+            poiText: '#134E4A',
+            poiHalo: '#CCFBF1'
+          }
+        }
       }
     },
     {
       id: 'food-stops',
       name: 'Food Stops',
       sourceUrl: 'https://example.com/food.kml',
-      defaultVisible: true,
-      colors: {
-        route: '#2563EB',
-        selected: '#1E3A8A',
-        poi: '#2563EB',
-        poiText: '#1E3A8A',
-        poiHalo: '#DBEAFE'
+      defaultVisible: false,
+      layerColors: {
+        default: {
+          route: '#2563EB',
+          selected: '#1E3A8A',
+          poi: '#2563EB',
+          poiText: '#1E3A8A',
+          poiHalo: '#DBEAFE'
+        },
+        byLayerName: {
+          'Food POIs': {
+            route: '#16A34A',
+            selected: '#166534',
+            poi: '#16A34A',
+            poiText: '#166534',
+            poiHalo: '#DCFCE7'
+          }
+        }
       }
     }
   ]
@@ -169,12 +191,21 @@ vi.mock('../components/RouteOverlayLayer', () => ({
 
 vi.mock('../components/CuratedPoiLayer', () => ({
   CuratedPoiLayer: (props: {
-    ids: { circle: string; label: string };
+    data: { features: Array<{ properties: Record<string, unknown> }> };
+    ids: { circle: string; icon: string; label: string };
+    onSelect: (properties: Record<string, unknown>) => void;
     palette: Record<string, string>;
   }) => {
     testState.poiLayerProps.push(props);
 
-    return null;
+    return (
+      <button
+        type="button"
+        onClick={() => props.onSelect(props.data.features[0].properties)}
+      >
+        Select {props.ids.circle}
+      </button>
+    );
   }
 }));
 
@@ -223,7 +254,7 @@ describe('MapPage', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^pcn route$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cycling path route/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /scenic connectors route/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /scenic connectors route/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /food spots route/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^pcn route$/i })).toHaveLength(1);
 
@@ -231,9 +262,7 @@ describe('MapPage', () => {
     expect(screen.queryByRole('link', { name: /open source/i })).not.toBeInTheDocument();
   });
 
-  it('keeps curated route and poi layers above the official overlays', async () => {
-    vi.useFakeTimers();
-
+  it('keeps visible curated route and poi layers above the official overlays', async () => {
     vi.mocked(useGeolocation).mockReturnValue({
       status: 'requesting',
       location: null,
@@ -243,21 +272,19 @@ describe('MapPage', () => {
 
     render(<MapPage />);
 
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    fireEvent.click(await screen.findByRole('button', { name: /scenic connectors route/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^pois poi$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /food spots route/i }));
+    fireEvent.click(screen.getByRole('button', { name: /food pois poi/i }));
 
-    await act(async () => {
-      vi.runAllTimers();
+    await waitFor(() => {
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-pcn-routes-route-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-cycling-path-routes-route-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-scenic-connectors-routes-route-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-pois-pois-circle-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-food-stops-food-spots-routes-route-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-food-stops-food-pois-pois-label-layer');
     });
-
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-pcn-routes-route-layer');
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-cycling-path-routes-route-layer');
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-scenic-connectors-routes-route-layer');
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-pois-pois-circle-layer');
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-food-stops-food-spots-routes-route-layer');
-    expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-food-stops-food-pois-pois-label-layer');
   });
 
   it('renders configured My Maps overlays with independent route and poi layer props', async () => {
@@ -269,6 +296,11 @@ describe('MapPage', () => {
     });
 
     render(<MapPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /scenic connectors route/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^pois poi$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /food spots route/i }));
+    fireEvent.click(screen.getByRole('button', { name: /food pois poi/i }));
 
     await waitFor(() => {
       expect(testState.routeOverlayProps.length).toBeGreaterThanOrEqual(3);
@@ -364,7 +396,7 @@ describe('MapPage', () => {
     await waitFor(() => {
       expect(JSON.parse(window.localStorage.getItem('cyclesg.curatedOverlayVisibility.v1') ?? '{}')).toEqual(
         expect.objectContaining({
-          'food-stops-food-spots': false
+          'food-stops-food-spots': true
         })
       );
     });
@@ -379,6 +411,8 @@ describe('MapPage', () => {
     });
 
     render(<MapPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /food spots route/i }));
 
     const selectFoodRoute = await screen.findByRole('button', {
       name: /select mymaps-food-stops-food-spots-routes-route-layer/i
@@ -402,6 +436,32 @@ describe('MapPage', () => {
     });
   });
 
+  it('opens the info sheet when a curated POI is selected', async () => {
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /^pois poi$/i }));
+
+    const selectPoi = await screen.findByRole('button', {
+      name: /select mymaps-jonathan-route-pois-pois-circle-layer/i
+    });
+
+    fireEvent.click(selectPoi);
+
+    await waitFor(() => {
+      expect(screen.getByText('POI ID rest-stop-point-1')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Rest stop')).toBeInTheDocument();
+    expect(screen.queryByText('Length unavailable')).not.toBeInTheDocument();
+  });
+
   it('shows config-driven attribution for the Jonathan overlay', async () => {
     vi.mocked(useGeolocation).mockReturnValue({
       status: 'requesting',
@@ -411,6 +471,8 @@ describe('MapPage', () => {
     });
 
     render(<MapPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /scenic connectors route/i }));
 
     const selectJonathanRoute = await screen.findByRole('button', {
       name: /select mymaps-jonathan-route-scenic-connectors-routes-route-layer/i
@@ -426,7 +488,11 @@ describe('MapPage', () => {
       'href',
       'https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html'
     );
-    expect(screen.queryByRole('button', { name: /^pcn route$/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: /open map layers/i })[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Map provided by Jonathan Hiew.')).not.toBeInTheDocument();
+    });
   });
 
   it('shows a permission error and enables recenter when GPS is available', async () => {
