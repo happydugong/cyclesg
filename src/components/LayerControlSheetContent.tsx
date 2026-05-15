@@ -1,3 +1,8 @@
+import type {
+  PointerEvent as ReactPointerEvent,
+  Ref,
+  TouchEvent as ReactTouchEvent
+} from 'react';
 import { useMemo } from 'react';
 import type { OverlayContentType, OverlayControlItem } from './LayerControlSheet';
 
@@ -13,16 +18,26 @@ function getOverlayContentLabel(contentType: OverlayContentType) {
 }
 
 interface LayerControlSheetContentProps {
+  contentScrollRef?: Ref<HTMLDivElement>;
   items: OverlayControlItem[];
   isVisible: (item: OverlayControlItem) => boolean;
+  onContentTouchEnd?: (event: ReactTouchEvent<HTMLDivElement>) => void;
+  onContentTouchMove?: (event: ReactTouchEvent<HTMLDivElement>) => void;
+  onContentTouchStart?: (event: ReactTouchEvent<HTMLDivElement>) => void;
   onClose: () => void;
+  onHeaderPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggle: (id: string, defaultVisible: boolean) => void;
 }
 
 export function LayerControlSheetContent({
+  contentScrollRef,
   items,
   isVisible,
+  onContentTouchEnd,
+  onContentTouchMove,
+  onContentTouchStart,
   onClose,
+  onHeaderPointerDown,
   onToggle
 }: LayerControlSheetContentProps) {
   const routeItems = useMemo(
@@ -108,7 +123,7 @@ export function LayerControlSheetContent({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="px-4 py-3">
+      <div className="touch-none px-4 py-3" onPointerDown={onHeaderPointerDown}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.08em] text-slate-400 dark:text-slate-300 ">Map Layers</p>
@@ -126,7 +141,14 @@ export function LayerControlSheetContent({
           </button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:max-h-[calc(100vh-12rem)]">
+      <div
+        ref={contentScrollRef}
+        className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:max-h-[calc(100vh-12rem)]"
+        onTouchStart={onContentTouchStart}
+        onTouchMove={onContentTouchMove}
+        onTouchEnd={onContentTouchEnd}
+        onTouchCancel={onContentTouchEnd}
+      >
         <div className="space-y-4">
           <section>
             <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
