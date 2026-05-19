@@ -151,7 +151,7 @@ For GitHub Pages, add a repository secret named `VITE_GA_MEASUREMENT_ID` in `Set
 
 Anonymous route comments use Firebase Authentication plus Firestore and are isolated behind a service abstraction so the React UI does not import Firebase directly.
 
-Setup details, security rules, and deployment variables are documented in [docs/firebase-comments.md](/Users/huishun/Desktop/cyclesg/docs/firebase-comments.md:1).
+Setup details, security rules, and deployment variables are documented in [docs/firebase-comments.md](./docs/firebase-comments.md).
 
 ## PWA notes
 
@@ -215,5 +215,5 @@ pnpm sync:curated-routes
 ## Feedback
 
 - Feature requests and bug reports go through GitHub Issues:
-  `https://github.com/huishun98/cyclesg/issues`
+  `https://github.com/happydugong/cyclesg/issues`
 - A dedicated feature request template is available in the issue chooser to keep submissions consistent.

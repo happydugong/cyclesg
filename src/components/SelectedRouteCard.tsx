@@ -115,7 +115,7 @@ export function SelectedRouteCard({
           ) : null}
           <CommentsSection key={route.routeId} routeId={route.routeId} />
         </div>
-        <div className="border-t border-slate-200/80 px-4 py-3 text-center text-xs text-slate-500">
+        {/* <div className="border-t border-slate-200/80 px-4 py-3 text-center text-xs text-slate-500">
           <a
             href={repositoryUrl}
             target="_blank"
@@ -124,7 +124,7 @@ export function SelectedRouteCard({
           >
             Open source
           </a>
-        </div>
+        </div> */}
       </div>
     </div>
   );

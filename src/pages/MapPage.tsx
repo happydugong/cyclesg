@@ -119,8 +119,8 @@ function updateOverlayState(
 }
 
 export function MapPage() {
-  const authorUrl = 'https://happyhuishun.github.io/';
-  const repositoryUrl = 'https://github.com/huishun98/cyclesg';
+  const authorUrl = 'https://happydugong.github.io/';
+  const repositoryUrl = 'https://github.com/happydugong/cyclesg';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);

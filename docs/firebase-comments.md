@@ -31,7 +31,7 @@ The comments UI stays hidden behind a graceful unavailable state when these valu
 4. In `Firestore Database`, create a database in production mode.
 5. Deploy the app with the Firebase env vars available to your GitHub Pages build.
 
-The frontend initializes anonymous auth on app load in [main.tsx](/Users/huishun/Desktop/cyclesg/src/main.tsx:1) through the comments service abstraction.
+The frontend initializes anonymous auth on app load in [main.tsx](./../src/main.tsx) through the comments service abstraction.
 
 ## Firestore data shape
 
