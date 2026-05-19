@@ -10,6 +10,7 @@ Production-oriented MVP for a Singapore cycling planner PWA built with React, Ty
 - Singapore Park Connector Network GeoJSON overlay from official NParks open data
 - Singapore cycling path GeoJSON overlay from official LTA open data
 - Configurable curated Google My Maps overlays with route lines and POI pins
+- Anonymous route comments backed by Firebase Auth and Firestore
 - Installable PWA manifest and service worker registration
 - Offline app-shell caching for startup
 - Environment variable support for future map or API configuration
@@ -60,6 +61,12 @@ cp .env.example .env.local
 Current variables:
 
 - `VITE_APP_NAME`
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
 - `VITE_GA_MEASUREMENT_ID`
 - `VITE_MAP_STYLE_URL`
 - `VITE_SINGAPORE_CENTER_LNG`
@@ -139,6 +146,12 @@ Then open the site and confirm requests to `googletagmanager.com` in the browser
 ### 5. Deploy
 
 For GitHub Pages, add a repository secret named `VITE_GA_MEASUREMENT_ID` in `Settings > Secrets and variables > Actions`, then redeploy the `Deploy GitHub Pages` workflow.
+
+## Firebase comments
+
+Anonymous route comments use Firebase Authentication plus Firestore and are isolated behind a service abstraction so the React UI does not import Firebase directly.
+
+Setup details, security rules, and deployment variables are documented in [docs/firebase-comments.md](/Users/huishun/Desktop/cyclesg/docs/firebase-comments.md:1).
 
 ## PWA notes
 

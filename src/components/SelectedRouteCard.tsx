@@ -1,4 +1,5 @@
 import type { UnifiedRouteProperties } from '../types/routes';
+import { CommentsSection } from './comments/CommentsSection';
 
 interface SelectedRouteCardProps {
   authorUrl: string;
@@ -112,6 +113,7 @@ export function SelectedRouteCard({
               ) : null}
             </div>
           ) : null}
+          <CommentsSection key={route.routeId} routeId={route.routeId} />
         </div>
         <div className="border-t border-slate-200/80 px-4 py-3 text-center text-xs text-slate-500">
           <span>By </span>
