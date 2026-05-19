@@ -116,16 +116,6 @@ export function SelectedRouteCard({
           <CommentsSection key={route.routeId} routeId={route.routeId} />
         </div>
         <div className="border-t border-slate-200/80 px-4 py-3 text-center text-xs text-slate-500">
-          <span>By </span>
-          <a
-            href={authorUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
-          >
-            Hui Shun
-          </a>
-          <span className="px-2 text-slate-300">•</span>
           <a
             href={repositoryUrl}
             target="_blank"

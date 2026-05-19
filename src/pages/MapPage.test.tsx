@@ -340,7 +340,6 @@ describe('MapPage', () => {
     expect(screen.getByRole('button', { name: /food spots route/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^pcn route$/i })).toHaveLength(1);
 
-    expect(screen.queryByRole('link', { name: /hui shun/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /open source/i })).not.toBeInTheDocument();
   });
 
