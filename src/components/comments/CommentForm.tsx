@@ -74,7 +74,7 @@ export function CommentForm({
           className="block w-full resize-y rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
         />
         <div className="flex items-center justify-between gap-3 text-[11px] text-slate-500">
-          <span>Anonymous sign-in is handled automatically.</span>
+          <span>Max 1 comment every {rateLimitMs / 1000}s.</span>
           <span>{remainingCharacters} left</span>
         </div>
       </div>
@@ -85,10 +85,7 @@ export function CommentForm({
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] text-slate-500">
-          Max 1 comment every {rateLimitMs / 1000}s.
-        </p>
+      <div className="flex items-center justify-end gap-3">
         <button
           type="submit"
           disabled={isSubmitDisabled}
