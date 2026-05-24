@@ -211,9 +211,13 @@ pnpm sync:curated-routes
 - The script reads `src/config/overlay-sources.json`, filters Google My Maps source entries, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
 - A separate GitHub Actions workflow at `.github/workflows/sync-curated-routes.yml` supports manual refresh through `workflow_dispatch` only
 - This overlay is a third-party curated source, not official NParks data, so review attribution and permission requirements before republishing it
+- For new curated map suggestions, use the dedicated GitHub issue template and maintainer guide in [`docs/map-suggestions.md`](docs/map-suggestions.md)
 
 ## Feedback
 
 - Feature requests and bug reports go through GitHub Issues:
   `https://github.com/happydugong/cyclesg/issues`
 - A dedicated feature request template is available in the issue chooser to keep submissions consistent.
+- Google My Maps overlay suggestions have their own issue template so submitters provide the public map URL, attribution, and permission details needed for import.
+- Direct issue link for a map suggestion:
+  `https://github.com/happydugong/cyclesg/issues/new?template=map_suggestion.yml`

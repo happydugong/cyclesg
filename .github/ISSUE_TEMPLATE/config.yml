@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General feature request
+    url: https://github.com/happydugong/cyclesg/issues/new?template=feature_request.yml
+    about: Use this for non-map ideas or broader product requests.

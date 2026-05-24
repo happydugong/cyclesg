@@ -6,6 +6,9 @@ import type {
 import { useMemo } from 'react';
 import type { OverlayContentType, OverlayControlItem } from './LayerControlSheet';
 
+const MAP_SUGGESTION_ISSUE_URL =
+  'https://github.com/happydugong/cyclesg/issues/new?template=map_suggestion.yml';
+
 function getOverlayContentLabel(contentType: OverlayContentType) {
   switch (contentType) {
     case 'poi':
@@ -181,6 +184,16 @@ export function LayerControlSheetContent({
             </section>
           ) : null}
         </div>
+      </div>
+      <div className="border-t border-white/10 px-4 py-3 text-center sm:border-slate-200">
+        <a
+          href={MAP_SUGGESTION_ISSUE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-slate-400 underline decoration-white/30 underline-offset-2 transition hover:text-slate-200 hover:decoration-white/60 sm:text-slate-500 sm:decoration-slate-300 sm:hover:text-slate-700 sm:hover:decoration-slate-500"
+        >
+          Suggest a route
+        </a>
       </div>
     </div>
   );

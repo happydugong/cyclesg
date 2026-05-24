@@ -2,6 +2,9 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LayerControlSheet, type OverlayControlItem } from './LayerControlSheet';
 
+const MAP_SUGGESTION_ISSUE_URL =
+  'https://github.com/happydugong/cyclesg/issues/new?template=map_suggestion.yml';
+
 function mockMobileViewport() {
   vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -89,5 +92,22 @@ describe('LayerControlSheet', () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('renders a footer link to the map suggestion issue template', () => {
+    const { getByRole } = render(
+      <LayerControlSheet
+        items={items}
+        isOpen
+        isVisible={() => true}
+        onClose={vi.fn()}
+        onOpen={vi.fn()}
+        onToggle={vi.fn()}
+      />
+    );
+
+    expect(
+      getByRole('link', { name: /suggest a route/i })
+    ).toHaveAttribute('href', MAP_SUGGESTION_ISSUE_URL);
   });
 });

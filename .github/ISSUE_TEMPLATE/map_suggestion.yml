@@ -1,0 +1,82 @@
+name: Suggest a Google My Maps overlay
+description: Propose a public Google My Maps overlay for CycleSG
+title: "[Map Suggestion]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest a Google My Maps overlay that CycleSG can import into the curated routes layer.
+
+        Before submitting:
+        - Make sure the Google My Maps map is public or unlisted and can be opened without signing in.
+        - Share the Google My Maps page URL and the KML export URL if you have it.
+        - Confirm that you created the map or have permission to let CycleSG republish it.
+        - Include attribution details that should appear in the app.
+  - type: input
+    id: map_title
+    attributes:
+      label: Map title
+      description: The name CycleSG should show for this overlay.
+      placeholder: East Coast Food Stops
+    validations:
+      required: true
+  - type: input
+    id: my_maps_page_url
+    attributes:
+      label: Google My Maps page URL
+      description: Link to the public Google My Maps page.
+      placeholder: https://www.google.com/maps/d/viewer?mid=...
+    validations:
+      required: true
+  - type: input
+    id: kml_export_url
+    attributes:
+      label: KML export URL (optional)
+      description: Optional. Add it if you know it. It usually looks like https://www.google.com/maps/d/kml?mid=...&forcekml=1
+      placeholder: https://www.google.com/maps/d/kml?mid=...&forcekml=1
+  - type: textarea
+    id: description
+    attributes:
+      label: What is in this map?
+      description: Describe the routes, POIs, and who this is useful for.
+      placeholder: This map contains...
+    validations:
+      required: true
+  - type: textarea
+    id: layer_notes
+    attributes:
+      label: Layer notes
+      description: List any folder names or layers that should be hidden, highlighted, or treated specially.
+      placeholder: Hide the layer named "Draft". Use a bike shop icon for the layer named "Repair shops".
+  - type: input
+    id: attribution_name
+    attributes:
+      label: Attribution name
+      description: Name of the map creator or source to display in the app.
+      placeholder: Jane Tan
+    validations:
+      required: true
+  - type: input
+    id: attribution_url
+    attributes:
+      label: Attribution URL
+      description: Link to the creator profile, post, or original source page.
+      placeholder: https://example.com/my-map-post
+    validations:
+      required: true
+  - type: checkboxes
+    id: permissions
+    attributes:
+      label: Permissions and visibility
+      options:
+        - label: I created this map or I have permission to let CycleSG republish it.
+          required: true
+        - label: I confirmed the map can be accessed without signing in.
+          required: true
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add screenshots, sample route names, or anything else a maintainer should check.
