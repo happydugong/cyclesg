@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - src/config/overlay-sources/**
   workflow_dispatch:
 
 permissions:

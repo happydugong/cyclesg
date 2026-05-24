@@ -1,0 +1,34 @@
+{
+  "id": "santa-claus-ride",
+  "label": "Santa Claus",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a Santa Claus shape.",
+  "asset": {
+    "geoJson": "src/assets/Santa_Claus_Ride.geojson",
+    "metadata": "src/assets/Santa_Claus_Ride-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#DC2626",
+    "selectedColor": "#991B1B",
+    "activeBackgroundColor": "#FEE2E2",
+    "activeTextColor": "#991B1B"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#DC2626",
+        "selected": "#991B1B",
+        "poi": "#DC2626",
+        "poiText": "#991B1B",
+        "poiHalo": "#FEE2E2"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/6404350298"
+  }
+}

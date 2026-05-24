@@ -82,22 +82,26 @@ function getOverlayLoadErrorMessage(source: OverlaySourceConfig) {
 
 function getOverlaySection(source: OverlaySourceConfig, contentType: ReturnType<typeof getOverlayContentType>) {
   if (isDataGovOverlaySource(source)) {
-    return 'routes' as const;
+    return 'official-routes' as const;
   }
 
-  if (isCuratedFileOverlaySource(source) || source.sourceKind === 'google-my-maps') {
-    if (contentType === 'route') {
-      return 'curated-routes' as const;
-    }
+  if (contentType === 'poi') {
+    return 'pois' as const;
+  }
 
-    if (contentType === 'poi') {
-      return 'pois' as const;
-    }
-
+  if (contentType !== 'route') {
     return 'others' as const;
   }
 
-  return contentType === 'poi' ? 'pois' : 'others';
+  if (source.sourceKind === 'google-my-maps') {
+    return 'compiled-routes' as const;
+  }
+
+  if (isCuratedFileOverlaySource(source)) {
+    return 'themed-routes' as const;
+  }
+
+  return 'others' as const;
 }
 
 function createInitialOverlayStates(): OverlaySourceState[] {

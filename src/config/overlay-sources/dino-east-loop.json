@@ -1,0 +1,34 @@
+{
+  "id": "dino-east-loop",
+  "label": "T-Rex",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a T-Rex shape.",
+  "asset": {
+    "geoJson": "src/assets/Dino East Loop.geojson",
+    "metadata": "src/assets/Dino East Loop-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#2563EB",
+    "selectedColor": "#1D4ED8",
+    "activeBackgroundColor": "#DBEAFE",
+    "activeTextColor": "#1E3A8A"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#2563EB",
+        "selected": "#1D4ED8",
+        "poi": "#2563EB",
+        "poiText": "#1E3A8A",
+        "poiHalo": "#DBEAFE"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/routes/2849675869311752650"
+  }
+}

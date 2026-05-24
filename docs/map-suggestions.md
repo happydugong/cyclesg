@@ -7,36 +7,37 @@ Use the `Suggest a Google My Maps overlay` issue template when a user wants to p
 Direct issue link:
 `https://github.com/happydugong/cyclesg/issues/new?template=map_suggestion.yml`
 
+The GitHub workflow creates a PR automatically when the issue is opened. After that PR is merged to `main`, another workflow opens a second PR with the regenerated overlay config and curated routes assets.
+
 ## What the suggester needs to provide
 
 - A clear overlay title.
 - A public Google My Maps page URL.
-- A KML export URL if they know it.
 - A short description of what the map contains.
 - Attribution name and attribution URL.
 - Confirmation that the map is public and can be republished by CycleSG.
 - Any layer notes, such as folders to hide or icons that should be customized.
 
-## What the maintainer should do
+## What the maintainer should review
 
-1. Open the issue and confirm the Google My Maps page works without signing in.
+1. Confirm the Google My Maps page works without signing in.
 2. Confirm permission and attribution are clear enough to republish the map in CycleSG.
-3. Derive or verify the KML export URL.
-   The import pipeline expects a URL like `https://www.google.com/maps/d/kml?mid=...&forcekml=1`.
-   If the issue only contains a page URL, extract the `mid` value from that URL and build the KML URL.
-4. Add a new `google-my-maps` entry to [`src/config/overlay-sources.json`](../src/config/overlay-sources.json).
-5. Set `sourceKind` to `google-my-maps`, `featureAdapter` to `my-maps`, `asset.geoJson` to `src/assets/curated-routes.geojson`, `asset.metadata` to `src/assets/curated-routes-metadata.json`, `sync.sourceUrl` to the public KML export URL, and `attribution` from the issue details.
-6. Add `layerRules` only if the issue or the imported result needs special handling.
-7. Run:
+3. Review the auto-created PR that adds the overlay record under [`src/config/overlay-sources/`](../src/config/overlay-sources/).
+4. Merge that PR only if the map should be accepted.
+5. After merge, let the post-merge workflow open a second PR with [`src/config/overlay-sources.generated.json`](../src/config/overlay-sources.generated.json), [`src/assets/curated-routes.geojson`](../src/assets/curated-routes.geojson), and [`src/assets/curated-routes-metadata.json`](../src/assets/curated-routes-metadata.json).
+6. Review and merge that generated-files PR to deploy the final state.
+7. If the generated route import looks wrong, close that generated-files PR and adjust the overlay record or layer rules in a follow-up PR.
 
-```bash
-pnpm sync:curated-routes
-```
+## What automation does
 
-8. Review the generated changes in [`src/assets/curated-routes.geojson`](../src/assets/curated-routes.geojson) and [`src/assets/curated-routes-metadata.json`](../src/assets/curated-routes-metadata.json).
-9. Check that features were imported, routes and POIs appear in Singapore, labels and attribution look correct, and no folders that should be hidden are leaking into the UI.
-10. If needed, refine `layerRules` in [`src/config/overlay-sources.json`](../src/config/overlay-sources.json) and rerun `pnpm sync:curated-routes`.
-11. Commit the config and generated asset changes together.
+1. Parse the issue body.
+2. Extract the Google My Maps `mid` value from the page URL.
+3. Build the KML export URL as `https://www.google.com/maps/d/kml?mid=...&forcekml=1`.
+4. Create a new overlay record file in [`src/config/overlay-sources/`](../src/config/overlay-sources/).
+5. Open a PR for that record.
+6. After the PR is merged to `main`, run `pnpm generate:overlay-sources`.
+7. Then run `pnpm sync:my-maps-overlays`.
+8. Open a second PR with the generated config and curated route asset updates.
 
 ## Notes
 

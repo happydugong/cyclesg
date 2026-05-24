@@ -44,11 +44,15 @@ export function LayerControlSheetContent({
   onToggle
 }: LayerControlSheetContentProps) {
   const routeItems = useMemo(
-    () => items.filter((item) => item.section === 'routes'),
+    () => items.filter((item) => item.section === 'official-routes'),
     [items]
   );
-  const curatedRouteItems = useMemo(
-    () => items.filter((item) => item.section === 'curated-routes'),
+  const compiledRouteItems = useMemo(
+    () => items.filter((item) => item.section === 'compiled-routes'),
+    [items]
+  );
+  const themedRouteItems = useMemo(
+    () => items.filter((item) => item.section === 'themed-routes'),
     [items]
   );
   const poiItems = useMemo(
@@ -155,16 +159,24 @@ export function LayerControlSheetContent({
         <div className="space-y-4">
           <section>
             <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
-              Routes
+              Official Routes
             </p>
             <div className="space-y-2">{renderItems(routeItems)}</div>
           </section>
-          {curatedRouteItems.length > 0 ? (
+          {compiledRouteItems.length > 0 ? (
             <section>
               <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
-                Curated Routes
+                Compiled Routes
               </p>
-              <div className="space-y-2">{renderItems(curatedRouteItems)}</div>
+              <div className="space-y-2">{renderItems(compiledRouteItems)}</div>
+            </section>
+          ) : null}
+          {themedRouteItems.length > 0 ? (
+            <section>
+              <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
+                Themed Routes
+              </p>
+              <div className="space-y-2">{renderItems(themedRouteItems)}</div>
             </section>
           ) : null}
           {poiItems.length > 0 ? (

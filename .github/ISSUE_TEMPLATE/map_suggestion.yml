@@ -3,6 +3,7 @@ description: Propose a public Google My Maps overlay for CycleSG
 title: "[Map Suggestion]: "
 labels:
   - enhancement
+  - map-suggestion
 body:
   - type: markdown
     attributes:
@@ -11,7 +12,7 @@ body:
 
         Before submitting:
         - Make sure the Google My Maps map is public or unlisted and can be opened without signing in.
-        - Share the Google My Maps page URL and the KML export URL if you have it.
+        - Share the Google My Maps page URL.
         - Confirm that you created the map or have permission to let CycleSG republish it.
         - Include attribution details that should appear in the app.
   - type: input
@@ -30,12 +31,6 @@ body:
       placeholder: https://www.google.com/maps/d/viewer?mid=...
     validations:
       required: true
-  - type: input
-    id: kml_export_url
-    attributes:
-      label: KML export URL (optional)
-      description: Optional. Add it if you know it. It usually looks like https://www.google.com/maps/d/kml?mid=...&forcekml=1
-      placeholder: https://www.google.com/maps/d/kml?mid=...&forcekml=1
   - type: textarea
     id: description
     attributes:

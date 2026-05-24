@@ -166,7 +166,8 @@ Setup details, security rules, and deployment variables are documented in [docs/
   `https://tiles.openfreemap.org/styles/liberty`
 - PCN data is stored at `src/assets/pcn.geojson`
 - Cycling path data is stored at `src/assets/cycling-paths.geojson`
-- Overlay source config is stored at `src/config/overlay-sources.json`
+- Overlay source records are stored in `src/config/overlay-sources/`
+- The generated runtime config is stored at `src/config/overlay-sources.generated.json`
 - Curated My Maps data is stored at `src/assets/curated-routes.geojson`
 - The current file is sourced from NParks on data.gov.sg:
   `https://data.gov.sg/datasets/d_a69ef89737379f231d2ae93fd1c5707f/view`
@@ -201,15 +202,17 @@ pnpm sync:pcn
 
 ## Curated Routes sync
 
-- The repo includes a curated overlay sync script at `scripts/sync-curated-routes.mjs`
+- The repo includes a curated overlay sync script at `scripts/my-maps-sync.mjs`
 - Run it locally with:
 
 ```bash
-pnpm sync:curated-routes
+pnpm sync:my-maps-overlays
 ```
 
-- The script reads `src/config/overlay-sources.json`, filters Google My Maps source entries, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
-- A separate GitHub Actions workflow at `.github/workflows/sync-curated-routes.yml` supports manual refresh through `workflow_dispatch` only
+- The script reads the source records in `src/config/overlay-sources/`, filters Google My Maps source entries, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
+- Regenerate the runtime overlay config with `pnpm generate:overlay-sources` after adding or editing overlay source records
+- A separate GitHub Actions workflow at `.github/workflows/refresh-google-my-maps-data.yml` supports manual refresh through `workflow_dispatch` only
+- Overlay source record merges trigger `.github/workflows/build-overlay-files-pr.yml`, which opens a second PR with generated files instead of pushing directly to `main`
 - This overlay is a third-party curated source, not official NParks data, so review attribution and permission requirements before republishing it
 - For new curated map suggestions, use the dedicated GitHub issue template and maintainer guide in [`docs/map-suggestions.md`](docs/map-suggestions.md)
 

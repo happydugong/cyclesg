@@ -1,13 +1,18 @@
-name: Sync Curated Routes Overlay
+name: Refresh Google My Maps Data
 
 on:
   workflow_dispatch:
+    inputs:
+      overlay_id:
+        description: Required. Provide exactly one Google My Maps overlay id.
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  sync-curated-routes:
+  refresh-google-my-maps-data:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,8 +33,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Sync curated Google My Maps overlay
-        run: pnpm sync:curated-routes
+      - name: Refresh Google My Maps route assets
+        env:
+          OVERLAY_SOURCE_ID: ${{ inputs.overlay_id }}
+        run: pnpm sync:my-maps-overlays
 
       - name: Commit and push changes
         run: |
@@ -41,5 +48,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/assets/curated-routes.geojson src/assets/curated-routes-metadata.json
-          git commit -m "chore: sync curated routes overlay"
+          git commit -m "chore: refresh google my maps data"
           git push

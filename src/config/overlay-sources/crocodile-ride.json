@@ -1,0 +1,34 @@
+{
+  "id": "crocodile-ride",
+  "label": "Crocodile",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a crocodile shape.",
+  "asset": {
+    "geoJson": "src/assets/Crocodile_Ride.geojson",
+    "metadata": "src/assets/Crocodile_Ride-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#15803D",
+    "selectedColor": "#14532D",
+    "activeBackgroundColor": "#DCFCE7",
+    "activeTextColor": "#14532D"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#15803D",
+        "selected": "#14532D",
+        "poi": "#15803D",
+        "poiText": "#14532D",
+        "poiHalo": "#DCFCE7"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/5974894424"
+  }
+}

@@ -1,0 +1,104 @@
+name: Create Map Suggestion PR
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    if: contains(github.event.issue.labels.*.name, 'map-suggestion')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create overlay source record from issue
+        id: create_record
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          node ./scripts/create-overlay-source-from-issue.mjs > /tmp/map-suggestion.json
+          cat /tmp/map-suggestion.json
+          echo "overlay_id=$(node -e \"const fs=require('fs');const data=JSON.parse(fs.readFileSync('/tmp/map-suggestion.json','utf8'));console.log(data.id)\")" >> "$GITHUB_OUTPUT"
+          echo "source_url=$(node -e \"const fs=require('fs');const data=JSON.parse(fs.readFileSync('/tmp/map-suggestion.json','utf8'));console.log(data.sourceUrl)\")" >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<EOF"
+            node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('/tmp/map-suggestion.json','utf8'));console.log((data.layerNotes||'').trim() || 'None provided.')"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "context<<EOF"
+            node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('/tmp/map-suggestion.json','utf8'));console.log((data.additionalContext||'').trim() || 'None provided.')"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create pull request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: map-suggestion/issue-${{ github.event.issue.number }}-${{ steps.create_record.outputs.overlay_id }}
+          delete-branch: true
+          commit-message: "feat: add map suggestion #${{ github.event.issue.number }}"
+          title: "feat: add map suggestion #${{ github.event.issue.number }}"
+          body: |
+            Adds a Google My Maps overlay source record from #${{ github.event.issue.number }}.
+
+            Source URL:
+            `${{ steps.create_record.outputs.source_url }}`
+
+            Layer notes:
+            ${{ steps.create_record.outputs.notes }}
+
+            Additional context:
+            ${{ steps.create_record.outputs.context }}
+          add-paths: |
+            src/config/overlay-sources/*.json
+          labels: |
+            enhancement
+
+      - name: Comment with PR link
+        if: steps.create_pr.outputs.pull-request-number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = `${{ steps.create_pr.outputs.pull-request-number }}`;
+            const prUrl = `${{ steps.create_pr.outputs.pull-request-url }}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Opened PR #${prNumber}: ${prUrl}`
+            });
+
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Failed to create a PR from this map suggestion automatically. Please check that the Google My Maps URL is valid and public.'
+            });

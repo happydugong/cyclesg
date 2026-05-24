@@ -1,0 +1,34 @@
+{
+  "id": "group-drawing-for-sea-horse",
+  "label": "Seahorse",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a seahorse shape.",
+  "asset": {
+    "geoJson": "src/assets/Group_drawing_for_Sea_horse_.geojson",
+    "metadata": "src/assets/Group_drawing_for_Sea_horse_-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#0F766E",
+    "selectedColor": "#134E4A",
+    "activeBackgroundColor": "#CCFBF1",
+    "activeTextColor": "#134E4A"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#0F766E",
+        "selected": "#134E4A",
+        "poi": "#0F766E",
+        "poiText": "#134E4A",
+        "poiHalo": "#CCFBF1"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/6160725894"
+  }
+}

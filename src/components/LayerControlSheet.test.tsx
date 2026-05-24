@@ -28,12 +28,56 @@ const items: OverlayControlItem[] = [
     id: 'official-pcn',
     label: 'PCN',
     contentType: 'route',
-    section: 'routes',
+    section: 'official-routes',
     defaultVisible: true,
     description: 'Official NParks connectors.',
     indicatorColor: '#2FA66A',
     activeBackgroundColor: '#DCFCE7',
     activeTextColor: '#166534'
+  },
+  {
+    id: 'jonathan-route',
+    label: 'Scenic Connectors',
+    contentType: 'route',
+    section: 'compiled-routes',
+    defaultVisible: false,
+    description: 'Compiled from Google My Maps.',
+    indicatorColor: '#F97316',
+    activeBackgroundColor: '#FFF7ED',
+    activeTextColor: '#7C2D12'
+  },
+  {
+    id: 'cny-rabbit-route',
+    label: 'Rabbit Ride',
+    contentType: 'route',
+    section: 'themed-routes',
+    defaultVisible: false,
+    description: 'Themed route import.',
+    indicatorColor: '#EA580C',
+    activeBackgroundColor: '#FFEDD5',
+    activeTextColor: '#9A3412'
+  },
+  {
+    id: 'snack-stop',
+    label: 'Food POIs',
+    contentType: 'poi',
+    section: 'pois',
+    defaultVisible: false,
+    description: 'Rest and food stops.',
+    indicatorColor: '#16A34A',
+    activeBackgroundColor: '#DCFCE7',
+    activeTextColor: '#166534'
+  },
+  {
+    id: 'misc-overlay',
+    label: 'Misc Overlay',
+    contentType: 'route-poi',
+    section: 'others',
+    defaultVisible: false,
+    description: 'Miscellaneous overlay.',
+    indicatorColor: '#64748B',
+    activeBackgroundColor: '#E2E8F0',
+    activeTextColor: '#334155'
   }
 ];
 
@@ -109,5 +153,24 @@ describe('LayerControlSheet', () => {
     expect(
       getByRole('link', { name: /suggest a route/i })
     ).toHaveAttribute('href', MAP_SUGGESTION_ISSUE_URL);
+  });
+
+  it('renders the updated section headings', () => {
+    const { getByText } = render(
+      <LayerControlSheet
+        items={items}
+        isOpen
+        isVisible={() => true}
+        onClose={vi.fn()}
+        onOpen={vi.fn()}
+        onToggle={vi.fn()}
+      />
+    );
+
+    expect(getByText('Official Routes')).toBeInTheDocument();
+    expect(getByText('Compiled Routes')).toBeInTheDocument();
+    expect(getByText('Themed Routes')).toBeInTheDocument();
+    expect(getByText('POIs')).toBeInTheDocument();
+    expect(getByText('Others')).toBeInTheDocument();
   });
 });

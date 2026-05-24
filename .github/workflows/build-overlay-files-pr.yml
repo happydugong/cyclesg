@@ -1,0 +1,58 @@
+name: Build Overlay Files
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/config/overlay-sources/**
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-overlay-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate overlay source config
+        run: pnpm generate:overlay-sources
+
+      - name: Refresh Google My Maps route assets
+        run: pnpm sync:my-maps-overlays
+
+      - name: Create pull request for generated files
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: build-overlay-files/${{ github.sha }}
+          delete-branch: true
+          commit-message: "chore: build overlay files"
+          title: "chore: build overlay files"
+          body: |
+            Regenerates overlay-derived files after a source record merge on `${{ github.ref_name }}`.
+
+            Triggering commit:
+            `${{ github.sha }}`
+          add-paths: |
+            src/config/overlay-sources.generated.json
+            src/assets/curated-routes.geojson
+            src/assets/curated-routes-metadata.json

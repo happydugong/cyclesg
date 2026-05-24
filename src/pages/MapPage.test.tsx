@@ -57,7 +57,7 @@ const testState = vi.hoisted(() => {
   };
 });
 
-vi.mock('../config/overlay-sources.json', () => ({
+vi.mock('../config/overlay-sources.generated.json', () => ({
   default: [
     {
       id: 'official-pcn',

@@ -1,0 +1,34 @@
+{
+  "id": "rawrsome-ride-baby-d-mommy-d",
+  "label": "Baby & Mummy T-Rex",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces baby and mummy T-Rex shapes.",
+  "asset": {
+    "geoJson": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_.geojson",
+    "metadata": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#16A34A",
+    "selectedColor": "#166534",
+    "activeBackgroundColor": "#DCFCE7",
+    "activeTextColor": "#166534"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#16A34A",
+        "selected": "#166534",
+        "poi": "#16A34A",
+        "poiText": "#166534",
+        "poiHalo": "#DCFCE7"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/5708579902"
+  }
+}

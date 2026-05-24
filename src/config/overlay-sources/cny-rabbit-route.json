@@ -1,0 +1,34 @@
+{
+  "id": "cny-rabbit-route",
+  "label": "Rabbit",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a rabbit shape.",
+  "asset": {
+    "geoJson": "src/assets/cny-rabbit-route.geojson",
+    "metadata": "src/assets/cny-rabbit-route-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#EA580C",
+    "selectedColor": "#9A3412",
+    "activeBackgroundColor": "#FFEDD5",
+    "activeTextColor": "#9A3412"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#EA580C",
+        "selected": "#9A3412",
+        "poi": "#EA580C",
+        "poiText": "#9A3412",
+        "poiHalo": "#FFEDD5"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Mapometer",
+    "sourceUrl": "https://sg.mapometer.com/cycling/route_5425400"
+  }
+}

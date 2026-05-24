@@ -1,0 +1,24 @@
+{
+  "id": "official-cycling-path",
+  "label": "Cycling Path",
+  "sourceKind": "data-gov-sg",
+  "featureAdapter": "cycling-path",
+  "defaultVisible": true,
+  "description": "Official LTA cycling path routes.",
+  "asset": {
+    "geoJson": "src/assets/cycling-paths.geojson",
+    "metadata": "src/assets/cycling-paths-metadata.json"
+  },
+  "sync": {
+    "datasetId": "d_8f468b25193f64be8a16fa7d8f60f553",
+    "datasetTitle": "Cycling Path Network (GEOJSON)",
+    "agency": "LTA",
+    "minFeatureCount": 100
+  },
+  "presentation": {
+    "routeColor": "#BE93D4",
+    "selectedColor": "#526072",
+    "activeBackgroundColor": "#F3E8FF",
+    "activeTextColor": "#6B21A8"
+  }
+}

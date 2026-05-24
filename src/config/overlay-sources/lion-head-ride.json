@@ -1,0 +1,34 @@
+{
+  "id": "lion-head-ride",
+  "label": "Merlion's Head",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a Merlion's Head silhouette.",
+  "asset": {
+    "geoJson": "src/assets/Lion_Head_Ride.geojson",
+    "metadata": "src/assets/Lion_Head_Ride-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#CA8A04",
+    "selectedColor": "#854D0E",
+    "activeBackgroundColor": "#FEF9C3",
+    "activeTextColor": "#854D0E"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#CA8A04",
+        "selected": "#854D0E",
+        "poi": "#CA8A04",
+        "poiText": "#854D0E",
+        "poiHalo": "#FEF9C3"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/5708623350"
+  }
+}

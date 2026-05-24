@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -10,11 +10,25 @@ import {
 
 function writeConfigFile(config: unknown) {
   const tempDirectory = mkdtempSync(join(tmpdir(), 'overlay-source-config-'));
-  const configPath = join(tempDirectory, 'overlay-sources.json');
-  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+  const configDirectoryPath = join(tempDirectory, 'overlay-sources');
+  const records = Array.isArray(config) ? config : [config];
+
+  mkdirSync(configDirectoryPath, { recursive: true });
+
+  records.forEach((record, index) => {
+    const recordId =
+      record && typeof record === 'object' && 'id' in record && typeof record.id === 'string'
+        ? record.id
+        : `record-${index + 1}`;
+    writeFileSync(
+      join(configDirectoryPath, `${recordId}.json`),
+      `${JSON.stringify(record, null, 2)}\n`,
+      'utf8'
+    );
+  });
 
   return {
-    configPath,
+    configDirectoryPath,
     cleanup() {
       rmSync(tempDirectory, { recursive: true, force: true });
     }
@@ -23,7 +37,7 @@ function writeConfigFile(config: unknown) {
 
 describe('overlay-source-config', () => {
   it('loads mixed overlay sources and filters them by source kind', async () => {
-    const { configPath, cleanup } = writeConfigFile([
+    const { configDirectoryPath, cleanup } = writeConfigFile([
       {
         id: 'official-pcn',
         label: 'PCN',
@@ -60,9 +74,9 @@ describe('overlay-source-config', () => {
     ]);
 
     try {
-      const sources = await loadOverlaySourceConfigs(configPath);
-      const dataGovSources = await loadDataGovOverlaySourceConfigs(configPath);
-      const myMapsSources = await loadMyMapsOverlaySourceConfigs(configPath);
+      const sources = await loadOverlaySourceConfigs(configDirectoryPath);
+      const dataGovSources = await loadDataGovOverlaySourceConfigs(configDirectoryPath);
+      const myMapsSources = await loadMyMapsOverlaySourceConfigs(configDirectoryPath);
 
       expect(sources).toHaveLength(2);
       expect(dataGovSources).toEqual([
@@ -85,7 +99,7 @@ describe('overlay-source-config', () => {
   });
 
   it('fails fast for invalid shared config entries', async () => {
-    const { configPath, cleanup } = writeConfigFile([
+    const { configDirectoryPath, cleanup } = writeConfigFile([
       {
         id: 'broken-source',
         label: 'Broken',
@@ -102,8 +116,93 @@ describe('overlay-source-config', () => {
     ]);
 
     try {
-      await expect(loadMyMapsOverlaySourceConfigs(configPath)).rejects.toThrow(
+      await expect(loadMyMapsOverlaySourceConfigs(configDirectoryPath)).rejects.toThrow(
         'Overlay source broken-source must define sync.sourceUrl.'
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('fails fast when overlay source ids are duplicated across files', async () => {
+    const { configDirectoryPath, cleanup } = writeConfigFile([
+      {
+        id: 'duplicate-source',
+        label: 'First',
+        sourceKind: 'google-my-maps',
+        featureAdapter: 'my-maps',
+        defaultVisible: false,
+        description: 'First overlay.',
+        asset: {
+          geoJson: 'src/assets/curated-routes.geojson',
+          metadata: 'src/assets/curated-routes-metadata.json'
+        },
+        sync: {
+          sourceUrl: 'https://example.com/first.kml'
+        },
+        presentation: {
+          routeColor: '#F97316',
+          selectedColor: '#7C2D12',
+          activeBackgroundColor: '#FFF7ED',
+          activeTextColor: '#7C2D12'
+        }
+      },
+      {
+        id: 'duplicate-source',
+        label: 'Second',
+        sourceKind: 'google-my-maps',
+        featureAdapter: 'my-maps',
+        defaultVisible: false,
+        description: 'Second overlay.',
+        asset: {
+          geoJson: 'src/assets/curated-routes.geojson',
+          metadata: 'src/assets/curated-routes-metadata.json'
+        },
+        sync: {
+          sourceUrl: 'https://example.com/second.kml'
+        },
+        presentation: {
+          routeColor: '#2563EB',
+          selectedColor: '#1E3A8A',
+          activeBackgroundColor: '#DBEAFE',
+          activeTextColor: '#1E3A8A'
+        }
+      }
+    ]);
+
+    writeFileSync(
+      join(configDirectoryPath, 'duplicate-source-copy.json'),
+      `${JSON.stringify(
+        {
+          id: 'duplicate-source',
+          label: 'Copied',
+          sourceKind: 'google-my-maps',
+          featureAdapter: 'my-maps',
+          defaultVisible: false,
+          description: 'Copied overlay.',
+          asset: {
+            geoJson: 'src/assets/curated-routes.geojson',
+            metadata: 'src/assets/curated-routes-metadata.json'
+          },
+          sync: {
+            sourceUrl: 'https://example.com/copied.kml'
+          },
+          presentation: {
+            routeColor: '#16A34A',
+            selectedColor: '#166534',
+            activeBackgroundColor: '#DCFCE7',
+            activeTextColor: '#166534'
+          }
+        },
+        null,
+        2
+      )}\n`,
+      'utf8'
+    );
+
+    try {
+      await expect(loadOverlaySourceConfigs(configDirectoryPath)).rejects.toThrow(
+        'Overlay source duplicate-source is duplicated.'
       );
     } finally {
       cleanup();

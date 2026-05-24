@@ -1,11 +1,24 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { Window } from 'happy-dom';
-import { loadMyMapsOverlaySourceConfigs } from './overlay-source-config.mjs';
+
+/*
+This module owns only the KML/KMZ-to-GeoJSON conversion path.
+
+The logic is intentionally isolated from config loading, HTTP fetching, and
+file writing so the parser can be reasoned about as a pure transformation step:
+
+1. normalize the raw KML text so DOM parsing is predictable
+2. extract styles, folders, placemarks, and geometries
+3. convert them into the app's feature shape
+4. validate the resulting features stay within Singapore bounds
+
+Everything here should answer one question only:
+"Given a KML or KMZ payload, what GeoJSON features does it contain?"
+*/
 
 const execFileAsync = promisify(execFile);
 const domParser = new Window().DOMParser;
@@ -16,12 +29,6 @@ const SINGAPORE_BOUNDS = {
   minLat: 1.19,
   maxLat: 1.48
 };
-
-export const CURATED_ROUTES_SOURCE_URL =
-  'https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1';
-
-const OUTPUT_PATH = resolve(process.cwd(), 'src/assets/curated-routes.geojson');
-const METADATA_PATH = resolve(process.cwd(), 'src/assets/curated-routes-metadata.json');
 
 function assert(condition, message) {
   if (!condition) {
@@ -42,16 +49,12 @@ function getNodeText(element, selector) {
   return match?.textContent?.trim() ?? null;
 }
 
-function escapeXmlText(value) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
 function sanitizeKmlXml(kmlText) {
   return kmlText.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, (_, cdataText) => {
-    return escapeXmlText(cdataText);
+    return cdataText
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   });
 }
 
@@ -76,24 +79,7 @@ function parseKmlCoordinates(rawCoordinates) {
   return coordinateSets;
 }
 
-function isCoordinateInSingaporeBounds(coordinate) {
-  if (!Array.isArray(coordinate) || coordinate.length < 2) {
-    return false;
-  }
-
-  const [lng, lat] = coordinate;
-
-  return (
-    typeof lng === 'number' &&
-    typeof lat === 'number' &&
-    lng >= SINGAPORE_BOUNDS.minLng &&
-    lng <= SINGAPORE_BOUNDS.maxLng &&
-    lat >= SINGAPORE_BOUNDS.minLat &&
-    lat <= SINGAPORE_BOUNDS.maxLat
-  );
-}
-
-function validateFeatures(features, overlayName = 'curated route') {
+export function validateFeatures(features, overlayName = 'curated route') {
   assert(Array.isArray(features) && features.length > 0, `No features were extracted for ${overlayName}.`);
 
   for (const feature of features) {
@@ -105,8 +91,18 @@ function validateFeatures(features, overlayName = 'curated route') {
     assert(coordinates.length > 0, 'Feature geometry must contain coordinates.');
 
     for (const coordinate of coordinates) {
+      const inSingaporeBounds =
+        Array.isArray(coordinate) &&
+        coordinate.length >= 2 &&
+        typeof coordinate[0] === 'number' &&
+        typeof coordinate[1] === 'number' &&
+        coordinate[0] >= SINGAPORE_BOUNDS.minLng &&
+        coordinate[0] <= SINGAPORE_BOUNDS.maxLng &&
+        coordinate[1] >= SINGAPORE_BOUNDS.minLat &&
+        coordinate[1] <= SINGAPORE_BOUNDS.maxLat;
+
       assert(
-        isCoordinateInSingaporeBounds(coordinate),
+        inSingaporeBounds,
         `Found curated route coordinate outside Singapore bounds: ${coordinate.join(',')}`
       );
     }
@@ -316,7 +312,7 @@ export function parseCuratedRoutesKml(kmlText) {
 }
 
 async function extractKmlFromKmzBuffer(buffer) {
-  const tempDirectory = await mkdtemp(resolve(tmpdir(), 'curated-routes-'));
+  const tempDirectory = await mkdtemp(resolve(tmpdir(), 'my-maps-routes-'));
   const archivePath = resolve(tempDirectory, 'map.kmz');
 
   try {
@@ -339,174 +335,4 @@ export async function parseCuratedRoutesBuffer(buffer) {
   const kmlText = isKmz ? await extractKmlFromKmzBuffer(buffer) : buffer.toString('utf8');
 
   return parseCuratedRoutesKml(kmlText);
-}
-
-async function writeIfChanged(filePath, contents) {
-  let previousContents = null;
-
-  try {
-    previousContents = await readFile(filePath, 'utf8');
-  } catch {
-    previousContents = null;
-  }
-
-  if (previousContents === contents) {
-    return false;
-  }
-
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, contents, 'utf8');
-
-  return true;
-}
-
-export async function fetchCuratedRoutesBuffer(fetchImpl = fetch) {
-  return fetchCuratedRoutesBufferFromUrl(CURATED_ROUTES_SOURCE_URL, fetchImpl);
-}
-
-export async function fetchCuratedRoutesBufferFromUrl(sourceUrl, fetchImpl = fetch) {
-  const response = await fetchImpl(sourceUrl, {
-    headers: {
-      Accept: 'application/vnd.google-earth.kmz,application/vnd.google-earth.kml+xml,application/xml,text/xml,text/plain;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      Pragma: 'no-cache',
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'
-    },
-    redirect: 'follow'
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Request failed for curated Google My Maps dataset: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const buffer = Buffer.from(await response.arrayBuffer());
-  const contentType = response.headers.get('content-type') ?? '';
-  const contentDisposition = response.headers.get('content-disposition') ?? '';
-  const prefix = buffer.subarray(0, 256).toString('utf8').trimStart().toLowerCase();
-  const isKmz = buffer[0] === 0x50 && buffer[1] === 0x4b;
-  const looksLikeKml = prefix.startsWith('<?xml') || prefix.startsWith('<kml');
-  const isDeclaredKml =
-    contentType.includes('xml') ||
-    contentType.includes('kml') ||
-    contentDisposition.toLowerCase().includes('.kml') ||
-    contentDisposition.toLowerCase().includes('.kmz');
-
-  if (!isKmz && !(looksLikeKml && isDeclaredKml)) {
-    throw new Error(
-      `Expected KML/KMZ from Google My Maps export but received ${contentType || 'an unknown content type'}.`
-    );
-  }
-
-  if (prefix.startsWith('<!doctype html') || prefix.startsWith('<html')) {
-    throw new Error('Google My Maps export returned HTML instead of KML/KMZ.');
-  }
-
-  return buffer;
-}
-
-function countFeatureTypes(features) {
-  return features.reduce(
-    (result, feature) => {
-      if (feature.geometry.type === 'Point') {
-        result.pointCount += 1;
-      } else {
-        result.lineCount += 1;
-      }
-
-      return result;
-    },
-    { lineCount: 0, pointCount: 0 }
-  );
-}
-
-function normalizeMyMapsOverlayConfig(overlay) {
-  return {
-    ...overlay,
-    name: overlay.label ?? overlay.name,
-    sourceUrl: overlay.sync?.sourceUrl ?? overlay.sourceUrl
-  };
-}
-
-function annotateOverlayFeatures(geoJson, overlay) {
-  return geoJson.features.map((feature) => ({
-    ...feature,
-    properties: {
-      ...feature.properties,
-      featureId: `${overlay.id}-${feature.properties.featureId}`,
-      overlayId: overlay.id,
-      overlayName: overlay.name
-    }
-  }));
-}
-
-export async function syncCuratedRoutes(fetchImpl = fetch, options = {}) {
-  const overlays = (
-    options.overlays ?? await loadMyMapsOverlaySourceConfigs(options.configPath)
-  ).map(normalizeMyMapsOverlayConfig);
-  const overlayResults = [];
-  const combinedFeatures = [];
-
-  for (const overlay of overlays) {
-    const buffer = await fetchCuratedRoutesBufferFromUrl(overlay.sourceUrl, fetchImpl);
-    const geoJson = await parseCuratedRoutesBuffer(buffer);
-    const annotatedFeatures = annotateOverlayFeatures(geoJson, overlay);
-
-    validateFeatures(annotatedFeatures, overlay.name);
-    combinedFeatures.push(...annotatedFeatures);
-
-    overlayResults.push({
-      id: overlay.id,
-      name: overlay.name,
-      sourceUrl: overlay.sourceUrl,
-      featureCount: annotatedFeatures.length,
-      ...countFeatureTypes(annotatedFeatures)
-    });
-  }
-
-  const counts = countFeatureTypes(combinedFeatures);
-  const geoJson = {
-    type: 'FeatureCollection',
-    features: combinedFeatures
-  };
-
-  const metadata = {
-    sourceLabel: 'google-my-maps',
-    syncedAt: new Date().toISOString(),
-    featureCount: geoJson.features.length,
-    ...counts,
-    overlays: overlayResults
-  };
-
-  const geoJsonChanged = await writeIfChanged(
-    options.outputPath ?? OUTPUT_PATH,
-    `${JSON.stringify(geoJson, null, 2)}\n`
-  );
-  const metadataChanged = await writeIfChanged(
-    options.metadataPath ?? METADATA_PATH,
-    `${JSON.stringify(metadata, null, 2)}\n`
-  );
-
-  return {
-    featureCount: geoJson.features.length,
-    ...counts,
-    overlays: overlayResults,
-    geoJsonChanged,
-    metadataChanged
-  };
-}
-
-async function main() {
-  const result = await syncCuratedRoutes();
-  console.log(JSON.stringify(result, null, 2));
-}
-
-if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  main().catch((error) => {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
-  });
 }

@@ -1,0 +1,24 @@
+{
+  "id": "official-pcn",
+  "label": "PCN",
+  "sourceKind": "data-gov-sg",
+  "featureAdapter": "pcn",
+  "defaultVisible": true,
+  "description": "Official NParks park connector routes.",
+  "asset": {
+    "geoJson": "src/assets/pcn.geojson",
+    "metadata": "src/assets/pcn-metadata.json"
+  },
+  "sync": {
+    "datasetId": "d_a69ef89737379f231d2ae93fd1c5707f",
+    "datasetTitle": "Park Connector Loop",
+    "agency": "NParks",
+    "minFeatureCount": 100
+  },
+  "presentation": {
+    "routeColor": "#2FA66A",
+    "selectedColor": "#526072",
+    "activeBackgroundColor": "#DCFCE7",
+    "activeTextColor": "#166534"
+  }
+}

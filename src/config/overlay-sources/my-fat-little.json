@@ -1,0 +1,34 @@
+{
+  "id": "my-fat-little",
+  "label": "Pig",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a pig shape.",
+  "asset": {
+    "geoJson": "src/assets/My_Fat_Little_.geojson",
+    "metadata": "src/assets/My_Fat_Little_-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#DB2777",
+    "selectedColor": "#9D174D",
+    "activeBackgroundColor": "#FCE7F3",
+    "activeTextColor": "#9D174D"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#DB2777",
+        "selected": "#9D174D",
+        "poi": "#DB2777",
+        "poiText": "#9D174D",
+        "poiHalo": "#FCE7F3"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/5949567081"
+  }
+}

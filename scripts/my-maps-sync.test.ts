@@ -3,7 +3,12 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseCuratedRoutesBuffer, parseCuratedRoutesKml, syncCuratedRoutes } from './sync-curated-routes.mjs';
+import { parseCuratedRoutesBuffer, parseCuratedRoutesKml } from './my-maps-kml-parser.mjs';
+import { syncCuratedRoutes } from './my-maps-sync.mjs';
+
+function toRequestUrl(input: RequestInfo | URL) {
+  return typeof input === 'string' || input instanceof URL ? String(input) : input.url;
+}
 
 const sampleKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -46,7 +51,7 @@ const sampleKml = `<?xml version="1.0" encoding="UTF-8"?>
   </Document>
 </kml>`;
 
-describe('sync-curated-routes parser', () => {
+describe('sync-my-maps-routes', () => {
   it('parses KML LineString and Point features with folder metadata', () => {
     const result = parseCuratedRoutesKml(sampleKml);
 
@@ -77,7 +82,7 @@ describe('sync-curated-routes parser', () => {
   });
 
   it('handles KMZ buffers by extracting the embedded KML', async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), 'curated-routes-kmz-'));
+    const tempDirectory = mkdtempSync(join(tmpdir(), 'my-maps-routes-kmz-'));
 
     try {
       const kmlPath = join(tempDirectory, 'doc.kml');
@@ -120,7 +125,7 @@ describe('sync-curated-routes parser', () => {
   });
 
   it('syncs multiple configured My Maps overlays into one annotated GeoJSON asset', async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), 'curated-routes-sync-'));
+    const tempDirectory = mkdtempSync(join(tmpdir(), 'my-maps-routes-sync-'));
 
     try {
       const outputPath = join(tempDirectory, 'curated-routes.geojson');
@@ -158,8 +163,8 @@ describe('sync-curated-routes parser', () => {
         }
       ];
       const requestedUrls: string[] = [];
-      const fetchImpl = async (url: string) => {
-        requestedUrls.push(url);
+      const fetchImpl = async (input: RequestInfo | URL) => {
+        requestedUrls.push(toRequestUrl(input));
 
         return new Response(sampleKml, {
           status: 200,
@@ -229,6 +234,116 @@ describe('sync-curated-routes parser', () => {
           ]
         })
       );
+    } finally {
+      rmSync(tempDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('supports refreshing only selected overlay ids while preserving existing others', async () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), 'my-maps-routes-partial-sync-'));
+
+    try {
+      const outputPath = join(tempDirectory, 'curated-routes.geojson');
+      const metadataPath = join(tempDirectory, 'curated-routes-metadata.json');
+      const overlays = [
+        {
+          id: 'jonathan-route',
+          label: 'Jonathan Route',
+          sourceKind: 'google-my-maps',
+          featureAdapter: 'my-maps',
+          defaultVisible: false,
+          description: 'Jonathan Route Google My Maps layer.',
+          asset: {
+            geoJson: 'src/assets/curated-routes.geojson',
+            metadata: 'src/assets/curated-routes-metadata.json'
+          },
+          sync: {
+            sourceUrl: 'https://example.com/cycling.kml'
+          }
+        },
+        {
+          id: 'food-stops',
+          label: 'Food Stops',
+          sourceKind: 'google-my-maps',
+          featureAdapter: 'my-maps',
+          defaultVisible: false,
+          description: 'Food Stops Google My Maps layer.',
+          asset: {
+            geoJson: 'src/assets/curated-routes.geojson',
+            metadata: 'src/assets/curated-routes-metadata.json'
+          },
+          sync: {
+            sourceUrl: 'https://example.com/food.kml'
+          }
+        }
+      ];
+
+      await syncCuratedRoutes(async (_input: RequestInfo | URL) => {
+        return new Response(sampleKml, {
+          status: 200,
+          headers: {
+            'content-type': 'application/vnd.google-earth.kml+xml'
+          }
+        });
+      }, {
+        overlays,
+        outputPath,
+        metadataPath
+      });
+
+      const updatedKml = sampleKml.replace('Canal Route', 'Updated Canal Route');
+      const requestedUrls: string[] = [];
+      const fetchImpl = async (input: RequestInfo | URL) => {
+        requestedUrls.push(toRequestUrl(input));
+
+        return new Response(updatedKml, {
+          status: 200,
+          headers: {
+            'content-type': 'application/vnd.google-earth.kml+xml'
+          }
+        });
+      };
+
+      const result = await syncCuratedRoutes(fetchImpl, {
+        overlays,
+        overlayId: 'jonathan-route',
+        outputPath,
+        metadataPath
+      });
+
+      const geoJson = JSON.parse(readFileSync(outputPath, 'utf8'));
+      const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
+      const updatedOverlayFeatures = geoJson.features.filter(
+        (feature: { properties: { overlayId: string } }) =>
+          feature.properties.overlayId === 'jonathan-route'
+      );
+      const preservedOverlayFeatures = geoJson.features.filter(
+        (feature: { properties: { overlayId: string } }) =>
+          feature.properties.overlayId === 'food-stops'
+      );
+
+      expect(requestedUrls).toEqual(['https://example.com/cycling.kml']);
+      expect(result).toEqual(
+        expect.objectContaining({
+          featureCount: 4,
+          lineCount: 2,
+          pointCount: 2
+        })
+      );
+      expect(
+        updatedOverlayFeatures.some(
+          (feature: { properties: { name: string } }) => feature.properties.name === 'Updated Canal Route'
+        )
+      ).toBe(true);
+      expect(
+        preservedOverlayFeatures.some(
+          (feature: { properties: { name: string } }) => feature.properties.name === 'Canal Route'
+        )
+      ).toBe(true);
+      expect(metadata.overlays).toEqual([
+        expect.objectContaining({ id: 'jonathan-route' }),
+        expect.objectContaining({ id: 'food-stops' })
+      ]);
     } finally {
       rmSync(tempDirectory, { recursive: true, force: true });
     }

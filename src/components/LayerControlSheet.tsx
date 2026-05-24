@@ -7,7 +7,12 @@ import {
 } from './useResponsiveSheet';
 
 export type OverlayContentType = 'route' | 'poi' | 'route-poi';
-export type OverlaySection = 'curated-routes' | 'routes' | 'pois' | 'others';
+export type OverlaySection =
+  | 'official-routes'
+  | 'compiled-routes'
+  | 'themed-routes'
+  | 'pois'
+  | 'others';
 
 export interface OverlayControlItem {
   id: string;

@@ -1,7 +1,11 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readdir, readFile } from 'node:fs/promises';
+import { extname, resolve } from 'node:path';
 
-export const CONFIG_PATH = resolve(process.cwd(), 'src/config/overlay-sources.json');
+export const CONFIG_DIRECTORY_PATH = resolve(process.cwd(), 'src/config/overlay-sources');
+export const GENERATED_CONFIG_PATH = resolve(
+  process.cwd(),
+  'src/config/overlay-sources.generated.json'
+);
 
 function assert(condition, message) {
   if (!condition) {
@@ -76,21 +80,47 @@ function validateLocalFileConfig(source) {
   );
 }
 
-export async function loadOverlaySourceConfigs(configPath = CONFIG_PATH) {
-  const configText = await readFile(configPath, 'utf8');
-  const sources = JSON.parse(configText);
+async function loadOverlaySourceConfigDirectory(configDirectoryPath) {
+  const entries = await readdir(configDirectoryPath, { withFileTypes: true });
+  const jsonFiles = entries
+    .filter((entry) => entry.isFile() && extname(entry.name) === '.json')
+    .map((entry) => entry.name)
+    .sort((left, right) => left.localeCompare(right));
 
-  assert(Array.isArray(sources) && sources.length > 0, 'Overlay source config must contain at least one source.');
+  assert(jsonFiles.length > 0, 'Overlay source config directory must contain at least one JSON file.');
 
-  for (const source of sources) {
-    validateCommonConfig(source);
+  const sources = [];
+
+  for (const fileName of jsonFiles) {
+    const configPath = resolve(configDirectoryPath, fileName);
+    const configText = await readFile(configPath, 'utf8');
+    const source = JSON.parse(configText);
+
+    assert(source && !Array.isArray(source), `Overlay source file ${fileName} must contain a single source object.`);
+    sources.push(source);
   }
 
   return sources;
 }
 
-export async function loadDataGovOverlaySourceConfigs(configPath = CONFIG_PATH) {
-  const sources = await loadOverlaySourceConfigs(configPath);
+export async function loadOverlaySourceConfigs(configDirectoryPath = CONFIG_DIRECTORY_PATH) {
+  const sources = await loadOverlaySourceConfigDirectory(configDirectoryPath);
+
+  assert(Array.isArray(sources) && sources.length > 0, 'Overlay source config must contain at least one source.');
+
+  const sourceIds = new Set();
+
+  for (const source of sources) {
+    validateCommonConfig(source);
+    assert(!sourceIds.has(source.id), `Overlay source ${source.id} is duplicated.`);
+    sourceIds.add(source.id);
+  }
+
+  return sources;
+}
+
+export async function loadDataGovOverlaySourceConfigs(configDirectoryPath = CONFIG_DIRECTORY_PATH) {
+  const sources = await loadOverlaySourceConfigs(configDirectoryPath);
   const filteredSources = sources.filter((source) => source.sourceKind === 'data-gov-sg');
 
   for (const source of filteredSources) {
@@ -100,8 +130,8 @@ export async function loadDataGovOverlaySourceConfigs(configPath = CONFIG_PATH) 
   return filteredSources;
 }
 
-export async function loadMyMapsOverlaySourceConfigs(configPath = CONFIG_PATH) {
-  const sources = await loadOverlaySourceConfigs(configPath);
+export async function loadMyMapsOverlaySourceConfigs(configDirectoryPath = CONFIG_DIRECTORY_PATH) {
+  const sources = await loadOverlaySourceConfigs(configDirectoryPath);
   const filteredSources = sources.filter((source) => source.sourceKind === 'google-my-maps');
 
   for (const source of filteredSources) {
@@ -111,8 +141,8 @@ export async function loadMyMapsOverlaySourceConfigs(configPath = CONFIG_PATH) {
   return filteredSources;
 }
 
-export async function loadLocalFileOverlaySourceConfigs(configPath = CONFIG_PATH) {
-  const sources = await loadOverlaySourceConfigs(configPath);
+export async function loadLocalFileOverlaySourceConfigs(configDirectoryPath = CONFIG_DIRECTORY_PATH) {
+  const sources = await loadOverlaySourceConfigs(configDirectoryPath);
   const filteredSources = sources.filter((source) => source.sourceKind === 'local-file');
 
   for (const source of filteredSources) {

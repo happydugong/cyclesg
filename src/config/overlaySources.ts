@@ -1,4 +1,4 @@
-import overlaySourcesJson from './overlay-sources.json';
+import overlaySourcesJson from './overlay-sources.generated.json';
 import { loadCyclingPathGeoJson } from '../services/cyclingPath/cyclingPathService';
 import { loadCuratedRoutesGeoJson } from '../services/curatedRoutes/curatedRoutesService';
 import { loadPcnGeoJson } from '../services/pcn/pcnService';

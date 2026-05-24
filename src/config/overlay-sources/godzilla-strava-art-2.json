@@ -1,0 +1,34 @@
+{
+  "id": "godzilla-strava-art-2",
+  "label": "Godzilla",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "defaultVisible": false,
+  "description": "Route that traces a Godzilla shape.",
+  "asset": {
+    "geoJson": "src/assets/Godzilla_Strava_Art_2.geojson",
+    "metadata": "src/assets/Godzilla_Strava_Art_2-metadata.json"
+  },
+  "presentation": {
+    "routeColor": "#7C3AED",
+    "selectedColor": "#5B21B6",
+    "activeBackgroundColor": "#EDE9FE",
+    "activeTextColor": "#5B21B6"
+  },
+  "layerRules": {
+    "colors": {
+      "default": {
+        "route": "#7C3AED",
+        "selected": "#5B21B6",
+        "poi": "#7C3AED",
+        "poiText": "#5B21B6",
+        "poiHalo": "#EDE9FE"
+      }
+    }
+  },
+  "attribution": {
+    "message": "Original route on",
+    "sourceLabel": "Strava",
+    "sourceUrl": "https://www.strava.com/activities/6087758378"
+  }
+}
