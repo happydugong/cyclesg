@@ -69,7 +69,7 @@ export function CommentForm({
           value={text}
           maxLength={commentCharacterLimit}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Share a tip, condition update, or caution for this route."
+          placeholder="Share a tip, condition update, or caution for this spot."
           rows={4}
           className="block w-full resize-y rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
         />

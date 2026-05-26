@@ -18,7 +18,9 @@ const testState = vi.hoisted(() => {
     palette: { routeColor: unknown; selectedColor: string };
   }> = [];
   const poiLayerProps: Array<{
+    data: { features: Array<{ properties: Record<string, unknown> }> };
     ids: { circle: string; icon: string; label: string };
+    onSelect: (properties: Record<string, unknown>) => void;
     palette: Record<string, string>;
   }> = [];
   const handlers = new Map<string, Set<(event?: { originalEvent?: unknown }) => void>>();
@@ -105,6 +107,30 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
         selectedColor: '#526072',
         activeBackgroundColor: '#F3E8FF',
         activeTextColor: '#6B21A8'
+      }
+    },
+    {
+      id: 'official-rail-station',
+      label: 'MRT/LRT Stations',
+      sourceKind: 'data-gov-sg',
+      featureAdapter: 'rail-station',
+      defaultVisible: true,
+      description: 'Official URA Master Plan 2019 MRT/LRT station outlines shown as station markers.',
+      asset: {
+        geoJson: 'src/assets/rail-stations.geojson',
+        metadata: 'src/assets/rail-stations-metadata.json'
+      },
+      sync: {
+        datasetId: 'rail-station-dataset',
+        datasetTitle: 'Master Plan 2019 Rail Station layer (GEOJSON)',
+        agency: 'URA',
+        minFeatureCount: 100
+      },
+      presentation: {
+        routeColor: '#2563EB',
+        selectedColor: '#1E3A8A',
+        activeBackgroundColor: '#DBEAFE',
+        activeTextColor: '#1E3A8A'
       }
     },
     {
@@ -210,6 +236,64 @@ vi.mock('../services/pcn/pcnService', () => ({
 
 vi.mock('../services/cyclingPath/cyclingPathService', () => ({
   loadCyclingPathGeoJson: vi.fn(() => Promise.resolve(cyclingPathFixture))
+}));
+
+vi.mock('../services/railStation/railStationService', () => ({
+  loadRailStationGeoJson: vi.fn(() =>
+    Promise.resolve({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [103.90280826828767, 1.4063299295444645],
+                [103.90228586062663, 1.4053811042860254],
+                [103.90232698542147, 1.4053586486262621],
+                [103.90280826828767, 1.4063299295444645]
+              ]
+            ]
+          },
+          properties: {
+            OBJECTID: 36,
+            GRND_LEVEL: 'ABOVEGROUND',
+            RAIL_TYPE: 'LRT',
+            NAME: 'PUNGGOL CENTRAL',
+            INC_CRC: '5ED154CD47409638',
+            FMEL_UPD_D: '20191209180316',
+            'SHAPE.AREA': 11506.493908565,
+            'SHAPE.LEN': 648.115901396167
+          }
+        },
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [103.903, 1.407],
+                [103.904, 1.407],
+                [103.904, 1.408],
+                [103.903, 1.407]
+              ]
+            ]
+          },
+          properties: {
+            OBJECTID: 37,
+            GRND_LEVEL: 'UNDERGROUND',
+            RAIL_TYPE: 'MRT',
+            NAME: null,
+            INC_CRC: '6E7738D952D979E6',
+            FMEL_UPD_D: '20191209180316',
+            'SHAPE.AREA': 401.26602951,
+            'SHAPE.LEN': 86.37980235812
+          }
+        }
+      ]
+    })
+  )
 }));
 
 vi.mock('../services/curatedRoutes/curatedRoutesService', () => ({
@@ -336,6 +420,7 @@ describe('MapPage', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^pcn route$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cycling path route/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mrt\/lrt stations poi/i })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /scenic connectors route/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /food spots route/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^pcn route$/i })).toHaveLength(1);
@@ -361,6 +446,7 @@ describe('MapPage', () => {
     await waitFor(() => {
       expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-pcn-routes-route-layer');
       expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-cycling-path-routes-route-layer');
+      expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-official-rail-station-pois-circle-layer');
       expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-scenic-connectors-routes-route-layer');
       expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-jonathan-route-pois-pois-circle-layer');
       expect(testState.moveLayer).toHaveBeenCalledWith('mymaps-food-stops-food-spots-routes-route-layer');
@@ -397,6 +483,7 @@ describe('MapPage', () => {
     );
     expect(testState.poiLayerProps.map((props) => props.ids.circle)).toEqual(
       expect.arrayContaining([
+        'mymaps-official-rail-station-pois-circle-layer',
         'mymaps-jonathan-route-pois-pois-circle-layer',
         'mymaps-food-stops-food-pois-pois-circle-layer'
       ])
@@ -435,6 +522,19 @@ describe('MapPage', () => {
     expect(testState.routeOverlayProps.map((props) => props.ids.route)).not.toContain(
       'mymaps-jonathan-route-pcn-routes-route-layer'
     );
+    expect(testState.routeOverlayProps.map((props) => props.ids.route)).not.toContain(
+      'mymaps-official-rail-station-routes-route-layer'
+    );
+    expect(
+      testState.poiLayerProps
+        .find((props) => props.ids.circle === 'mymaps-official-rail-station-pois-circle-layer')
+        ?.data.features[0].properties.name
+    ).toBe('Punggol Central');
+    expect(
+      testState.poiLayerProps
+        .find((props) => props.ids.circle === 'mymaps-official-rail-station-pois-circle-layer')
+        ?.data.features[1].properties.name
+    ).toBe('Unnamed Station');
   });
 
   it('persists official overlay visibility in localStorage', async () => {

@@ -23,6 +23,7 @@ function validateCommonConfig(source) {
   assert(
     source.featureAdapter === 'pcn' ||
       source.featureAdapter === 'cycling-path' ||
+      source.featureAdapter === 'rail-station' ||
       source.featureAdapter === 'my-maps' ||
       source.featureAdapter === 'strava-gpx',
     `Overlay source ${source.id} has an unsupported featureAdapter.`
@@ -42,7 +43,9 @@ function validateCommonConfig(source) {
 function validateDataGovConfig(source) {
   assert(source.sourceKind === 'data-gov-sg', `Overlay source ${source.id} must be data.gov.sg.`);
   assert(
-    source.featureAdapter === 'pcn' || source.featureAdapter === 'cycling-path',
+    source.featureAdapter === 'pcn' ||
+      source.featureAdapter === 'cycling-path' ||
+      source.featureAdapter === 'rail-station',
     `Overlay source ${source.id} has an invalid adapter for data.gov.sg.`
   );
   assert(

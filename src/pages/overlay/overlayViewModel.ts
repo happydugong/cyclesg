@@ -1,6 +1,8 @@
+// Defines the shared overlay view-model shape plus the utilities that all adapters
+// use to build consistent layer IDs, normalized properties, and UI labels.
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { OverlaySourceConfig, OverlaySourceGeoJson } from '../../config/overlaySources';
-import type { CuratedRoutesGeoJson } from '../../types/curatedRoutes';
+import type { CuratedRoutesGeoJson, OverlayPoiProperties } from '../../types/curatedRoutes';
 import type { UnifiedRouteGeoJson, UnifiedRouteProperties } from '../../types/routes';
 
 export interface OverlayLayerViewModel {
@@ -38,6 +40,41 @@ export interface OverlayLayerViewModel {
 export interface OverlaySourceRuntimeState {
   sourceId: string;
   data: OverlaySourceGeoJson | null;
+}
+
+export function buildOverlayLayerViewModel({
+  id,
+  label,
+  source,
+  routeData,
+  poiData,
+  palette,
+  activeBackgroundColor,
+  activeTextColor
+}: {
+  id: string;
+  label: string;
+  source: OverlaySourceConfig;
+  routeData: UnifiedRouteGeoJson | null;
+  poiData: CuratedRoutesGeoJson | null;
+  palette: OverlayLayerViewModel['palette'];
+  activeBackgroundColor: string;
+  activeTextColor: string;
+}): OverlayLayerViewModel {
+  return {
+    id,
+    label,
+    source,
+    defaultVisible: source.defaultVisible,
+    description: source.description,
+    routeData,
+    poiData,
+    routeLayerIds: getOverlayRouteLayerIds(id),
+    poiLayerIds: getOverlayPoiLayerIds(id),
+    palette,
+    activeBackgroundColor,
+    activeTextColor
+  };
 }
 
 export function getOverlayRouteLayerIds(overlayLayerId: string) {
@@ -112,14 +149,14 @@ export function normalizeUnifiedRouteProperties(
   };
 }
 
-export function normalizeCuratedPoiProperties(
-  properties: CuratedRoutesGeoJson['features'][number]['properties'],
+export function normalizePoiProperties(
+  properties: OverlayPoiProperties,
   overlayLayerId: string
 ): UnifiedRouteProperties {
   return {
     routeId: String(properties.featureId),
-    routeType: 'curated-poi',
-    routeSource: 'curated-my-maps',
+    routeType: properties.routeType,
+    routeSource: properties.routeSource,
     routeName: String(properties.name),
     routeGroup: String(properties.layerName ?? properties.overlayName),
     routeLength: null,
@@ -143,6 +180,13 @@ export function getRoutePresentation(route: UnifiedRouteProperties) {
     return {
       colorClass: 'bg-[#BE93D4]',
       label: 'Cycling Path'
+    };
+  }
+
+  if (route.routeSource === 'official-rail-station') {
+    return {
+      colorClass: 'bg-[#2563EB]',
+      label: 'MRT/LRT Station'
     };
   }
 

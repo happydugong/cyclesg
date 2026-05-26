@@ -151,7 +151,7 @@ describe('LayerControlSheet', () => {
     );
 
     expect(
-      getByRole('link', { name: /suggest a route/i })
+      getByRole('link', { name: /suggest a route or poi/i })
     ).toHaveAttribute('href', MAP_SUGGESTION_ISSUE_URL);
   });
 
@@ -167,7 +167,7 @@ describe('LayerControlSheet', () => {
       />
     );
 
-    expect(getByText('Official Routes')).toBeInTheDocument();
+    expect(getByText('Official Routes / POIs')).toBeInTheDocument();
     expect(getByText('Compiled Routes')).toBeInTheDocument();
     expect(getByText('Themed Routes')).toBeInTheDocument();
     expect(getByText('POIs')).toBeInTheDocument();

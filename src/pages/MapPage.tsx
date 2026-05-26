@@ -21,14 +21,14 @@ import {
 import { useGeolocation } from '../hooks/useGeolocation';
 import { trackEvent } from '../services/analytics/googleAnalytics';
 import { createMap, createUserLocationMarker, flyToLocation } from '../services/map/mapService';
-import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
+import type { CuratedRoutesGeoJson, OverlayPoiProperties } from '../types/curatedRoutes';
 import type { UnifiedRouteProperties } from '../types/routes';
 import {
   buildOverlayLayerViewModels,
   getOverlayContentType,
   getRoutePresentation,
   isUnifiedRouteFeature,
-  normalizeCuratedPoiProperties,
+  normalizePoiProperties,
   normalizeUnifiedRouteProperties,
   type OverlayLayerViewModel,
   type OverlaySourceRuntimeState
@@ -74,6 +74,8 @@ function getOverlayLoadErrorMessage(source: OverlaySourceConfig) {
       return 'Unable to load Park Connector overlays.';
     case 'cycling-path':
       return 'Unable to load cycling path overlays.';
+    case 'rail-station':
+      return 'Unable to load MRT/LRT station overlays.';
     case 'my-maps':
     case 'strava-gpx':
       return 'Unable to load curated route overlays.';
@@ -149,10 +151,10 @@ export function MapPage() {
 
   const selectCuratedPoi = useCallback(
     (
-      properties: CuratedRoutesGeoJson['features'][number]['properties'],
+      properties: OverlayPoiProperties,
       overlayLayerId: string
     ) => {
-      setSelectedRoute(normalizeCuratedPoiProperties(properties, overlayLayerId));
+      setSelectedRoute(normalizePoiProperties(properties, overlayLayerId));
     },
     []
   );
@@ -541,14 +543,17 @@ export function MapPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      const orderedLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) => [
+      const orderedRouteLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) => [
         overlayLayer.routeLayerIds.route,
         overlayLayer.routeLayerIds.hitArea,
-        overlayLayer.routeLayerIds.selected,
+        overlayLayer.routeLayerIds.selected
+      ]);
+      const orderedPoiLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) => [
         overlayLayer.poiLayerIds.circle,
         overlayLayer.poiLayerIds.icon,
         overlayLayer.poiLayerIds.label
       ]);
+      const orderedLayerIds = [...orderedRouteLayerIds, ...orderedPoiLayerIds];
 
       for (const layerId of orderedLayerIds) {
         if (map.getLayer(layerId)) {

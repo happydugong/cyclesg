@@ -381,6 +381,30 @@
     }
   },
   {
+    "id": "official-rail-station",
+    "label": "MRT/LRT Stations",
+    "sourceKind": "data-gov-sg",
+    "featureAdapter": "rail-station",
+    "defaultVisible": true,
+    "description": "Official URA Master Plan 2019 MRT/LRT station outlines shown as station markers.",
+    "asset": {
+      "geoJson": "src/assets/rail-stations.geojson",
+      "metadata": "src/assets/rail-stations-metadata.json"
+    },
+    "sync": {
+      "datasetId": "d_8d886e3a83934d7447acdf5bc6959999",
+      "datasetTitle": "Master Plan 2019 Rail Station layer (GEOJSON)",
+      "agency": "URA",
+      "minFeatureCount": 100
+    },
+    "presentation": {
+      "routeColor": "#2563EB",
+      "selectedColor": "#1E3A8A",
+      "activeBackgroundColor": "#DBEAFE",
+      "activeTextColor": "#1E3A8A"
+    }
+  },
+  {
     "id": "rawrsome-ride-baby-d-mommy-d",
     "label": "Baby & Mummy T-Rex",
     "sourceKind": "local-file",
