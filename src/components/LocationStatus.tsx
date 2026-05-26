@@ -13,7 +13,7 @@ export function LocationStatus({ state }: LocationStatusProps) {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-6 sm:top-0 z-20 flex justify-center p-4">
+    <div className="pointer-events-none absolute inset-x-0 top-20 z-20 flex justify-center p-4 sm:top-24">
       <div className="max-w-sm rounded-2xl border border-white/15 bg-slate-950/85 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur">
         {isLoading ? (
           <div className="flex items-center gap-3">

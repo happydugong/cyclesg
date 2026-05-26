@@ -9,6 +9,7 @@ import {
 import { LocationStatus } from '../components/LocationStatus';
 import { MapViewport } from '../components/MapViewport';
 import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
+import { SearchLocationBar } from '../components/SearchLocationBar';
 import { SelectedRouteCard } from '../components/SelectedRouteCard';
 import {
   OVERLAY_SOURCES,
@@ -18,9 +19,12 @@ import {
   type OverlaySourceConfig,
   type OverlaySourceGeoJson
 } from '../config/overlaySources';
+import { useLocationSearch } from '../hooks/useLocationSearch';
+import { useSearchMarker } from '../hooks/useSearchMarker';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { trackEvent } from '../services/analytics/googleAnalytics';
 import { createMap, createUserLocationMarker, flyToLocation } from '../services/map/mapService';
+import type { LocationSearchResult } from '../services/locationSearch/nominatimService';
 import type { CuratedRoutesGeoJson, OverlayPoiProperties } from '../types/curatedRoutes';
 import type { UnifiedRouteProperties } from '../types/routes';
 import {
@@ -132,6 +136,7 @@ export function MapPage() {
   const userMarkerRef = useRef<Marker | null>(null);
   const hasAutoCenteredRef = useRef(false);
   const geolocation = useGeolocation();
+  const locationSearch = useLocationSearch();
   const [mapReady, setMapReady] = useState(false);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [followNotice, setFollowNotice] = useState<string | null>(null);
@@ -144,6 +149,7 @@ export function MapPage() {
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
   const followNoticeTimeoutRef = useRef<number | null>(null);
   const clearFollowNoticeTimeoutRef = useRef<number | null>(null);
+  const { focusSearchResult } = useSearchMarker(mapRef.current);
 
   const clearSelectedRoute = useCallback(() => {
     setSelectedRoute(null);
@@ -307,6 +313,17 @@ export function MapPage() {
     setSelectedRoute(null);
     setIsLayerPanelOpen(true);
   }, []);
+
+  const selectSearchLocation = useCallback((result: LocationSearchResult) => {
+    setSelectedRoute(null);
+    setIsFollowingUser(false);
+    focusSearchResult(result);
+    locationSearch.selectResult(result);
+
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }, [focusSearchResult, locationSearch]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -570,6 +587,7 @@ export function MapPage() {
   return (
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
+      <SearchLocationBar onSelect={selectSearchLocation} search={locationSearch} />
       <LocationStatus state={geolocation} />
       {followNotice ? (
         <div className="pointer-events-none absolute inset-x-0 top-24 z-20 flex justify-center px-4">
@@ -626,7 +644,7 @@ export function MapPage() {
           ))
         : null}
 
-      <div className="pointer-events-none absolute inset-x-0 top-6 sm:top-0 z-10 flex items-start p-4">
+      <div className="pointer-events-none absolute left-4 top-[5.25rem] z-10 hidden items-start sm:flex">
         <div className="rounded-[22px] border border-white/15 bg-slate-950/55 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur-md">
           <div>CycleSG</div>
         </div>

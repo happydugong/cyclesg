@@ -42,12 +42,31 @@ export function createUserLocationMarker() {
   });
 }
 
+export function createSearchLocationMarker() {
+  const element = document.createElement('div');
+  element.className = 'search-location-marker';
+
+  return new Marker({
+    element,
+    anchor: 'bottom'
+  });
+}
+
 export function flyToLocation(map: Map, longitude: number, latitude: number) {
   map.flyTo({
     center: [longitude, latitude],
     zoom: Math.max(map.getZoom(), 14.5),
     speed: 1.1,
     curve: 1.3,
+    essential: true
+  });
+}
+
+export function flyToSearchLocation(map: Map, longitude: number, latitude: number) {
+  map.flyTo({
+    center: [longitude, latitude],
+    zoom: 16,
+    duration: 1500,
     essential: true
   });
 }

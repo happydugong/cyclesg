@@ -8,8 +8,12 @@ const testState = vi.hoisted(() => {
   const addTo = vi.fn();
   const setLngLat = vi.fn(() => ({ addTo }));
   const mockMarker = { setLngLat, remove: vi.fn() };
+  const addSearchMarkerTo = vi.fn();
+  const setSearchMarkerLngLat = vi.fn(() => ({ addTo: addSearchMarkerTo }));
+  const searchMarker = { setLngLat: setSearchMarkerLngLat, remove: vi.fn() };
   const flyToLocation = vi.fn();
   const easeTo = vi.fn();
+  const flyTo = vi.fn();
   const moveLayer = vi.fn();
   const routeOverlayProps: Array<{
     data: { features: Array<{ properties: Record<string, unknown> }> };
@@ -42,16 +46,21 @@ const testState = vi.hoisted(() => {
     getLayer: vi.fn((id: string) => ({ id })),
     moveLayer,
     easeTo,
+    flyTo,
     remove: vi.fn()
   };
 
   return {
     addTo,
+    addSearchMarkerTo,
     easeTo,
+    flyTo,
     moveLayer,
     setLngLat,
+    setSearchMarkerLngLat,
     handlers,
     mockMarker,
+    searchMarker,
     flyToLocation,
     routeOverlayProps,
     poiLayerProps,
@@ -227,7 +236,16 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
 vi.mock('../services/map/mapService', () => ({
   createMap: vi.fn(() => testState.mapInstance),
   createUserLocationMarker: vi.fn(() => testState.mockMarker),
-  flyToLocation: testState.flyToLocation
+  createSearchLocationMarker: vi.fn(() => testState.searchMarker),
+  flyToLocation: testState.flyToLocation,
+  flyToSearchLocation: vi.fn((map: { flyTo: (options: unknown) => void }, longitude: number, latitude: number) => {
+    map.flyTo({
+      center: [longitude, latitude],
+      zoom: 16,
+      duration: 1500,
+      essential: true
+    });
+  })
 }));
 
 vi.mock('../services/pcn/pcnService', () => ({
@@ -382,6 +400,12 @@ describe('MapPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
+    vi.stubGlobal('fetch', vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: async () => []
+      })
+    ));
     testState.handlers.clear();
     testState.routeOverlayProps.length = 0;
     testState.poiLayerProps.length = 0;
@@ -396,6 +420,7 @@ describe('MapPage', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('shows a loading state and disables the center button while waiting for GPS', async () => {
@@ -856,5 +881,65 @@ describe('MapPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /center map on current location/i })).toHaveAttribute('aria-pressed', 'false');
     });
+  });
+
+  it('searches Singapore locations and drops a marker for the selected result', async () => {
+    vi.useFakeTimers();
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          place_id: 101,
+          lat: '1.2836',
+          lon: '103.8607',
+          name: 'Marina Bay Sands',
+          display_name: 'Marina Bay Sands, Bayfront Avenue, Singapore'
+        }
+      ]
+    } as Response);
+
+    render(<MapPage />);
+
+    const searchInput = screen.getByRole('searchbox', { name: /search location/i });
+
+    fireEvent.change(searchInput, { target: { value: 'ma' } });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('countrycodes=sg'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: 'application/json'
+        }),
+        signal: expect.any(AbortSignal)
+      })
+    );
+
+    fireEvent.click(screen.getByRole('option', { name: /marina bay sands/i }));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+
+    expect(testState.setSearchMarkerLngLat).toHaveBeenCalledWith([103.8607, 1.2836]);
+    expect(testState.addSearchMarkerTo).toHaveBeenCalledWith(testState.mapInstance);
+    expect(testState.flyTo).toHaveBeenCalledWith({
+      center: [103.8607, 1.2836],
+      zoom: 16,
+      duration: 1500,
+      essential: true
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Bayfront Avenue, Singapore')).not.toBeInTheDocument();
   });
 });

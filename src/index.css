@@ -54,3 +54,20 @@ button {
   border: 2px solid rgba(37, 99, 235, 0.4);
   animation: pulseSoft 2s ease-out infinite;
 }
+
+.search-location-marker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px 9999px 9999px 0;
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.35);
+}
+
+.search-location-marker::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 9999px;
+  background: #fff7ed;
+}
