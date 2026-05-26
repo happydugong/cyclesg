@@ -1,17 +1,15 @@
+// Adapts curated overlays that already use the app's curated GeoJSON shape,
+// splitting mixed features into per-layer route and POI datasets with styling.
 import type {
   CuratedLayerColors,
   LocalFileOverlaySourceConfig,
   MyMapsOverlaySourceConfig
-} from '../../config/overlaySources';
-import type { CuratedRoutesGeoJson } from '../../types/curatedRoutes';
-import type { UnifiedRouteGeoJson } from '../../types/routes';
-import {
-  getOverlayPoiLayerIds,
-  getOverlayRouteLayerIds,
-  type OverlayLayerViewModel
-} from './overlayRuntime';
+} from '../../../config/overlaySources';
+import type { CuratedRoutesGeoJson } from '../../../types/curatedRoutes';
+import type { UnifiedRouteGeoJson } from '../../../types/routes';
+import { buildOverlayLayerViewModel, type OverlayLayerViewModel } from '../overlayViewModel';
 
-type CuratedOverlaySourceConfig = MyMapsOverlaySourceConfig | LocalFileOverlaySourceConfig;
+export type CuratedOverlaySourceConfig = MyMapsOverlaySourceConfig | LocalFileOverlaySourceConfig;
 
 function slugify(value: string) {
   return value
@@ -26,7 +24,7 @@ function getConfiguredLayerColors(
   layerName: string
 ): CuratedLayerColors {
   if (!overlay.layerRules?.colors?.default) {
-    throw new Error(`Missing layerRules.colors.default for My Maps overlay "${overlay.id}".`);
+    throw new Error(`Missing layerRules.colors.default for curated overlay "${overlay.id}".`);
   }
 
   return overlay.layerRules.colors.byLayerName?.[layerName] ?? overlay.layerRules.colors.default;
@@ -93,15 +91,11 @@ function isLineFeature(
 }
 
 function buildCuratedRouteGeoJson(
-  curatedRoutesData: CuratedRoutesGeoJson | null,
+  curatedRoutesData: CuratedRoutesGeoJson,
   overlay: CuratedOverlaySourceConfig,
   overlayLayerId: string,
   layerName: string
 ): UnifiedRouteGeoJson | null {
-  if (!curatedRoutesData) {
-    return null;
-  }
-
   const features = curatedRoutesData.features
     .filter((feature) => feature.properties.overlayId === overlay.id)
     .filter((feature) => (feature.properties.layerName ?? overlay.label) === layerName)
@@ -137,14 +131,10 @@ function buildCuratedRouteGeoJson(
 }
 
 function buildCuratedPoiGeoJson(
-  curatedRoutesData: CuratedRoutesGeoJson | null,
+  curatedRoutesData: CuratedRoutesGeoJson,
   overlay: CuratedOverlaySourceConfig,
   layerName: string
 ): CuratedRoutesGeoJson | null {
-  if (!curatedRoutesData) {
-    return null;
-  }
-
   const features = curatedRoutesData.features
     .filter((feature) => feature.properties.overlayId === overlay.id)
     .filter((feature) => (feature.properties.layerName ?? overlay.label) === layerName)
@@ -156,6 +146,8 @@ function buildCuratedPoiGeoJson(
         ...feature,
         properties: {
           ...feature.properties,
+          routeType: 'curated-poi' as const,
+          routeSource: 'curated-my-maps' as const,
           poiIconHref,
           poiIconId: poiIconHref ? getStableIconId(poiIconHref) : null
         }
@@ -170,7 +162,7 @@ function buildCuratedPoiGeoJson(
     : null;
 }
 
-export function buildMyMapsOverlayLayerViewModels(
+export function buildCuratedOverlayLayerViewModels(
   source: CuratedOverlaySourceConfig,
   data: CuratedRoutesGeoJson | null
 ): OverlayLayerViewModel[] {
@@ -196,31 +188,29 @@ export function buildMyMapsOverlayLayerViewModels(
     layerNames.add(layerName);
   }
 
-  for (const layerName of Array.from(layerNames)) {
+  for (const layerName of layerNames) {
     const overlayLayerId = `${source.id}-${slugify(layerName || source.label) || 'layer'}`;
     const colors = getConfiguredLayerColors(source, layerName);
 
-    overlayLayers.push({
-      id: overlayLayerId,
-      label: layerName,
-      source,
-      defaultVisible: source.defaultVisible,
-      description: source.description,
-      routeData: buildCuratedRouteGeoJson(data, source, overlayLayerId, layerName),
-      poiData: buildCuratedPoiGeoJson(data, source, layerName),
-      routeLayerIds: getOverlayRouteLayerIds(overlayLayerId),
-      poiLayerIds: getOverlayPoiLayerIds(overlayLayerId),
-      palette: {
-        routeColor: colors.route,
-        selectedColor: colors.selected,
-        poiColor: colors.poi,
-        poiTextColor: colors.poiText,
-        poiHaloColor: colors.poiHalo,
-        iconScale: getConfiguredPoiIconScale(source, layerName)
-      },
-      activeBackgroundColor: colors.poiHalo,
-      activeTextColor: colors.selected
-    });
+    overlayLayers.push(
+      buildOverlayLayerViewModel({
+        id: overlayLayerId,
+        label: layerName,
+        source,
+        routeData: buildCuratedRouteGeoJson(data, source, overlayLayerId, layerName),
+        poiData: buildCuratedPoiGeoJson(data, source, layerName),
+        palette: {
+          routeColor: colors.route,
+          selectedColor: colors.selected,
+          poiColor: colors.poi,
+          poiTextColor: colors.poiText,
+          poiHaloColor: colors.poiHalo,
+          iconScale: getConfiguredPoiIconScale(source, layerName)
+        },
+        activeBackgroundColor: colors.poiHalo,
+        activeTextColor: colors.selected
+      })
+    );
   }
 
   return overlayLayers;

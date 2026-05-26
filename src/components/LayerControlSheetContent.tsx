@@ -43,7 +43,7 @@ export function LayerControlSheetContent({
   onHeaderPointerDown,
   onToggle
 }: LayerControlSheetContentProps) {
-  const routeItems = useMemo(
+  const officialItems = useMemo(
     () => items.filter((item) => item.section === 'official-routes'),
     [items]
   );
@@ -159,9 +159,9 @@ export function LayerControlSheetContent({
         <div className="space-y-4">
           <section>
             <p className="px-1 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
-              Official Routes
+              Official Routes / POIs
             </p>
-            <div className="space-y-2">{renderItems(routeItems)}</div>
+            <div className="space-y-2">{renderItems(officialItems)}</div>
           </section>
           {compiledRouteItems.length > 0 ? (
             <section>
@@ -204,7 +204,7 @@ export function LayerControlSheetContent({
           rel="noreferrer"
           className="text-xs text-slate-400 underline decoration-white/30 underline-offset-2 transition hover:text-slate-200 hover:decoration-white/60 sm:text-slate-500 sm:decoration-slate-300 sm:hover:text-slate-700 sm:hover:decoration-slate-500"
         >
-          Suggest a route
+          Suggest a route or POI
         </a>
       </div>
     </div>

@@ -7,7 +7,11 @@ import type {
   Map as MapLibreMap,
   MapLayerMouseEvent
 } from 'maplibre-gl';
-import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
+import {
+  isOverlayPoiProperties,
+  type CuratedRoutesGeoJson,
+  type OverlayPoiProperties
+} from '../types/curatedRoutes';
 
 interface CuratedPoiLayerProps {
   data: GeoJSONSourceSpecification['data'];
@@ -19,7 +23,7 @@ interface CuratedPoiLayerProps {
   };
   map: MapLibreMap | null;
   onClearSelection: () => void;
-  onSelect: (properties: CuratedRoutesGeoJson['features'][number]['properties']) => void;
+  onSelect: (properties: OverlayPoiProperties) => void;
   palette: {
     circleColor: string;
     iconScale?: number;
@@ -286,7 +290,11 @@ export function CuratedPoiLayer({
         | CuratedRoutesGeoJson['features'][number]['properties']
         | undefined;
 
-      if (properties?.featureId && properties.geometryKind === 'point') {
+      if (
+        properties?.featureId &&
+        properties.geometryKind === 'point' &&
+        isOverlayPoiProperties(properties)
+      ) {
         event.preventDefault();
         onSelect(properties);
       }

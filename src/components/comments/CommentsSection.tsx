@@ -157,7 +157,7 @@ export function CommentsSection({ routeId }: CommentsSectionProps) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Comments</h3>
-          <p className="mt-1 text-xs text-slate-500">Route notes from anonymous riders.</p>
+          <p className="mt-1 text-xs text-slate-500">Map notes from anonymous riders.</p>
         </div>
         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500">
           {comments.length}

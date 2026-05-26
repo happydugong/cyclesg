@@ -104,11 +104,12 @@ export function SelectedRouteCard({
         : `${Math.round(displayedRoute.routeLength)}m mapped length`;
 
   const isPoi = displayedRoute.routeType === 'curated-poi';
+  const isStation = displayedRoute.routeType === 'rail-station';
   const isCuratedOverlay =
     displayedRoute.routeSource === 'curated-my-maps' || displayedRoute.routeType === 'curated-poi';
   const details = [
-    `${isPoi ? 'POI' : 'Segment'} ID ${displayedRoute.routeId}`,
-    isPoi ? null : formattedRouteLength ?? 'Length unavailable',
+    `${isPoi ? 'POI' : isStation ? 'Station' : 'Segment'} ID ${displayedRoute.routeId}`,
+    isPoi || isStation ? null : formattedRouteLength ?? 'Length unavailable',
     isCuratedOverlay ? null : displayedRoute.layerName,
     isCuratedOverlay ? null : displayedRoute.overlayName
   ].filter((detail): detail is string => Boolean(detail));
