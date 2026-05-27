@@ -84,8 +84,8 @@ export function buildOverlayRecord({
     defaultVisible: false,
     description,
     asset: {
-      geoJson: 'src/assets/curated-routes.geojson',
-      metadata: 'src/assets/curated-routes-metadata.json'
+      geoJson: `data/${id}/converted/overlay.geojson`,
+      metadata: `data/${id}/metadata/convert.json`
     },
     sync: {
       sourceUrl: buildKmlExportUrl(myMapsPageUrl)

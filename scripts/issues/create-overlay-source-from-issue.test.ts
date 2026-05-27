@@ -65,6 +65,10 @@ describe('create overlay source from issue', () => {
         label: 'East Coast Food Stops',
         sourceKind: 'google-my-maps',
         featureAdapter: 'my-maps',
+        asset: {
+          geoJson: 'data/east-coast-food-stops/converted/overlay.geojson',
+          metadata: 'data/east-coast-food-stops/metadata/convert.json'
+        },
         sync: {
           sourceUrl: 'https://www.google.com/maps/d/kml?mid=1abcDEFghiJKLmnop&forcekml=1'
         },

@@ -10,8 +10,23 @@ function detectRawExtension(buffer) {
   return buffer[0] === 0x50 && buffer[1] === 0x4b ? 'kmz' : 'kml';
 }
 
+function filterSourcesById(sources, sourceId) {
+  if (!sourceId) {
+    return sources;
+  }
+
+  const filteredSources = sources.filter((source) => source.id === sourceId);
+
+  if (filteredSources.length === 0) {
+    throw new Error(`Unknown Google My Maps overlay source: ${sourceId}`);
+  }
+
+  return filteredSources;
+}
+
 export async function fetchMyMapsOverlays(fetchImpl = fetch) {
-  const sources = await loadMyMapsOverlaySourceConfigs();
+  const requestedSourceId = process.env.OVERLAY_SOURCE_ID?.trim();
+  const sources = filterSourcesById(await loadMyMapsOverlaySourceConfigs(), requestedSourceId);
   const results = [];
 
   for (const source of sources) {

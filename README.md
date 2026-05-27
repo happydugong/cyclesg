@@ -164,11 +164,11 @@ Setup details, security rules, and deployment variables are documented in [docs/
 
 - Basemap style defaults to OpenFreeMap Liberty:
   `https://tiles.openfreemap.org/styles/liberty`
-- PCN data is stored at `src/assets/pcn.geojson`
-- Cycling path data is stored at `src/assets/cycling-paths.geojson`
+- PCN data is stored at `data/official-pcn/converted/overlay.geojson`
+- Cycling path data is stored at `data/official-cycling-path/converted/overlay.geojson`
 - Overlay source records are stored in `src/config/overlay-sources/`
 - The generated runtime config is stored at `src/config/overlay-sources.generated.json`
-- Curated My Maps data is stored at `src/assets/curated-routes.geojson`
+- Curated My Maps data is stored per source at `data/<source-id>/converted/overlay.geojson`
 - The current file is sourced from NParks on data.gov.sg:
   `https://data.gov.sg/datasets/d_a69ef89737379f231d2ae93fd1c5707f/view`
 - Cycling path data is sourced from LTA on data.gov.sg:

@@ -6,6 +6,17 @@ import { parseCuratedRoutesBuffer, validateFeatures } from './my-maps-kml-parser
 import { assert, stringifyJson, writeIfChanged } from './common.mjs';
 import { getOverlayConvertedDirectory, getOverlayDataPaths, getOverlayRawDirectory } from './file-layout.mjs';
 
+function filterSourcesById(sources, sourceId) {
+  if (!sourceId) {
+    return sources;
+  }
+
+  const filteredSources = sources.filter((source) => source.id === sourceId);
+
+  assert(filteredSources.length > 0, `Unknown Google My Maps overlay source: ${sourceId}`);
+  return filteredSources;
+}
+
 function annotateOverlayFeatures(geoJson, overlay) {
   return geoJson.features.map((feature) => ({
     ...feature,
@@ -46,7 +57,8 @@ async function getRawPath(sourceId) {
 }
 
 export async function convertMyMapsOverlays() {
-  const sources = await loadMyMapsOverlaySourceConfigs();
+  const requestedSourceId = process.env.OVERLAY_SOURCE_ID?.trim();
+  const sources = filterSourcesById(await loadMyMapsOverlaySourceConfigs(), requestedSourceId);
   const results = [];
 
   for (const source of sources) {

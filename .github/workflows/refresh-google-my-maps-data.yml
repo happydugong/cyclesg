@@ -33,20 +33,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Refresh Google My Maps route assets
+      - name: Fetch Google My Maps raw data
         env:
           OVERLAY_SOURCE_ID: ${{ inputs.overlay_id }}
-        run: pnpm sync:my-maps-overlays
+        run: pnpm overlay:fetch:my-maps
+
+      - name: Convert Google My Maps overlays
+        env:
+          OVERLAY_SOURCE_ID: ${{ inputs.overlay_id }}
+        run: pnpm overlay:convert:my-maps
 
       - name: Commit and push changes
         run: |
-          if git diff --quiet -- src/assets/curated-routes.geojson src/assets/curated-routes-metadata.json; then
-            echo "No curated routes data changes detected."
+          if git diff --quiet -- "data/${{ inputs.overlay_id }}"; then
+            echo "No Google My Maps data changes detected."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/assets/curated-routes.geojson src/assets/curated-routes-metadata.json
+          git add "data/${{ inputs.overlay_id }}"
           git commit -m "chore: refresh google my maps data"
           git push

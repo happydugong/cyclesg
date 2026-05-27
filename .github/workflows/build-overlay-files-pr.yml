@@ -36,8 +36,23 @@ jobs:
       - name: Regenerate overlay source config
         run: pnpm generate:overlay-sources
 
-      - name: Refresh Google My Maps route assets
-        run: pnpm sync:my-maps-overlays
+      - name: Fetch Google My Maps raw data
+        run: pnpm overlay:fetch:my-maps
+
+      - name: Convert Google My Maps overlays
+        run: pnpm overlay:convert:my-maps
+
+      - name: Fetch official cycling datasets
+        run: pnpm overlay:fetch:data-gov
+
+      - name: Convert official cycling datasets
+        run: pnpm overlay:convert:data-gov
+
+      - name: Convert repo-backed GPX overlays
+        run: pnpm overlay:convert:gpx
+
+      - name: Regenerate overlay source config after conversions
+        run: pnpm generate:overlay-sources
 
       - name: Create pull request for generated files
         id: create_pr
@@ -54,5 +69,4 @@ jobs:
             `${{ github.sha }}`
           add-paths: |
             src/config/overlay-sources.generated.json
-            src/assets/curated-routes.geojson
-            src/assets/curated-routes-metadata.json
+            data/**
