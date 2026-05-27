@@ -77,7 +77,7 @@ export function LayerControlSheet({
   return (
     <>
       {shouldShowDesktopPanel ? (
-        <div className="pointer-events-none absolute bottom-4 left-4 top-20 z-20">
+        <div className="pointer-events-none absolute bottom-4 left-4 top-4 z-20">
           <div
             className={`pointer-events-auto flex h-full w-[22rem] max-w-[22rem] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/90 text-slate-900 shadow-floating backdrop-blur-md will-change-transform transition-[transform,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
               isDesktopPanelVisible

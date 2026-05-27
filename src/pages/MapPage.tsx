@@ -150,7 +150,7 @@ export function MapPage() {
   const [overlayLayerVisibility, setOverlayLayerVisibility] = useState(readStoredOverlayVisibility);
   const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(readIsDesktopViewport);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
-  const [isSearchVisible, setIsSearchVisible] = useState(true);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [displayedRoute, setDisplayedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);

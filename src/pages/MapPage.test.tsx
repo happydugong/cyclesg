@@ -556,8 +556,9 @@ describe('MapPage', () => {
     expect(screen.getByText('Finding your GPS location…')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByRole('searchbox', { name: /search location/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /show search/i })).toBeInTheDocument();
     });
+    expect(screen.queryByRole('searchbox', { name: /search location/i })).not.toBeInTheDocument();
 
     expect(
       screen.queryByText('Includes official NParks/LTA overlays and curated Google My Maps layers.')
@@ -1120,6 +1121,7 @@ describe('MapPage', () => {
 
     render(<MapPage />);
 
+    fireEvent.click(screen.getByRole('button', { name: /show search/i }));
     const searchInput = screen.getByRole('searchbox', { name: /search location/i });
 
     fireEvent.change(searchInput, { target: { value: 'ma' } });
@@ -1189,6 +1191,7 @@ describe('MapPage', () => {
 
     render(<MapPage />);
 
+    fireEvent.click(screen.getByRole('button', { name: /show search/i }));
     const searchInput = screen.getByRole('searchbox', { name: /search location/i });
     fireEvent.change(searchInput, { target: { value: 'or' } });
 

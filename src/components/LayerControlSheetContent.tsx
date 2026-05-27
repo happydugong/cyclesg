@@ -150,7 +150,7 @@ export function LayerControlSheetContent({
       </div>
       <div
         ref={contentScrollRef}
-        className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:max-h-[calc(100vh-12rem)]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:max-h-screen"
         onTouchStart={onContentTouchStart}
         onTouchMove={onContentTouchMove}
         onTouchEnd={onContentTouchEnd}
