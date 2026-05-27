@@ -754,6 +754,30 @@ describe('MapPage', () => {
     });
   });
 
+  it('persists the off-screen marker indicator preference in localStorage', async () => {
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    closeLayerPanelIfOpen();
+
+    fireEvent.click(screen.getByRole('button', { name: /open preferences/i }));
+    fireEvent.click(screen.getByRole('button', { name: /off-screen indicator/i }));
+
+    await waitFor(() => {
+      expect(JSON.parse(window.localStorage.getItem('cyclesg.preferences.v1') ?? '{}')).toEqual(
+        expect.objectContaining({
+          showOffscreenMarkerIndicator: false
+        })
+      );
+    });
+  });
+
   it('loads the stored floating control placement on startup', async () => {
     window.localStorage.setItem(
       'cyclesg.preferences.v1',
@@ -1128,6 +1152,11 @@ describe('MapPage', () => {
       duration: 1500,
       essential: true
     });
+
+    fireEvent.click(screen.getByRole('button', { name: /clear search/i }));
+
+    expect(testState.searchMarker.remove).toHaveBeenCalledTimes(1);
+    expect(searchInput).toHaveValue('');
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Bayfront Avenue, Singapore')).not.toBeInTheDocument();
   });

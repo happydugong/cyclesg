@@ -45,6 +45,21 @@ export function createUserLocationMarker() {
 export function createSearchLocationMarker() {
   const element = document.createElement('div');
   element.className = 'search-location-marker';
+  const pin = document.createElement('div');
+  pin.className = 'search-location-marker-pin';
+  pin.innerHTML = `
+    <svg aria-hidden="true" viewBox="0 0 32 40" focusable="false">
+      <path
+        d="M16 1.75C8.6 1.75 3 7.35 3 14.7C3 24.35 16 38.25 16 38.25C16 38.25 29 24.35 29 14.7C29 7.35 23.4 1.75 16 1.75Z"
+        fill="#ea580c"
+        stroke="#ffffff"
+        stroke-width="0"
+        stroke-linejoin="round"
+      />
+      <circle cx="16" cy="14.75" r="5.8" fill="#ffffff" />
+    </svg>
+  `;
+  element.append(pin);
 
   return new Marker({
     element,

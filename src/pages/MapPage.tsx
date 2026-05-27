@@ -11,6 +11,7 @@ import { MapViewport } from '../components/MapViewport';
 import { PreferencesSheet } from '../components/PreferencesSheet';
 import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
 import { SearchLocationBar } from '../components/SearchLocationBar';
+import { SearchMarkerOffscreenIndicator } from '../components/SearchMarkerOffscreenIndicator';
 import { SelectedRouteCard } from '../components/SelectedRouteCard';
 import {
   readIsDesktopViewport,
@@ -35,7 +36,7 @@ import {
   writeStoredAppPreferences
 } from '../services/preferences/preferences';
 import type { LocationSearchResult } from '../services/locationSearch/nominatimService';
-import type { CuratedRoutesGeoJson, OverlayPoiProperties } from '../types/curatedRoutes';
+import type { OverlayPoiProperties } from '../types/curatedRoutes';
 import type { UnifiedRouteProperties } from '../types/routes';
 import {
   buildOverlayLayerViewModels,
@@ -153,7 +154,7 @@ export function MapPage() {
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
   const followNoticeTimeoutRef = useRef<number | null>(null);
   const clearFollowNoticeTimeoutRef = useRef<number | null>(null);
-  const { focusSearchResult } = useSearchMarker(mapRef.current);
+  const { clearSearchMarker, focusSearchResult, searchMarkerLocation } = useSearchMarker(mapRef.current);
 
   const clearSelectedRoute = useCallback(() => {
     setSelectedRoute(null);
@@ -356,6 +357,14 @@ export function MapPage() {
       document.activeElement.blur();
     }
   }, [focusSearchResult, locationSearch]);
+
+  useEffect(() => {
+    if (locationSearch.query.trim().length > 0) {
+      return;
+    }
+
+    clearSearchMarker();
+  }, [clearSearchMarker, locationSearch.query]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -632,6 +641,9 @@ export function MapPage() {
   return (
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
+      {preferences.showOffscreenMarkerIndicator ? (
+        <SearchMarkerOffscreenIndicator map={mapRef.current} target={searchMarkerLocation} />
+      ) : null}
       <SearchLocationBar onSelect={selectSearchLocation} search={locationSearch} />
       <LocationStatus state={geolocation} />
       {followNotice ? (
@@ -701,11 +713,18 @@ export function MapPage() {
         isOpen={isPreferencesOpen}
         options={CONTROL_DOCK_PLACEMENT_OPTIONS}
         placement={preferences.controlDockPlacement}
+        showOffscreenMarkerIndicator={preferences.showOffscreenMarkerIndicator}
         onClose={() => setIsPreferencesOpen(false)}
         onPlacementChange={(controlDockPlacement) => {
           setPreferences((current) => ({
             ...current,
             controlDockPlacement
+          }));
+        }}
+        onShowOffscreenMarkerIndicatorChange={(showOffscreenMarkerIndicator) => {
+          setPreferences((current) => ({
+            ...current,
+            showOffscreenMarkerIndicator
           }));
         }}
       />

@@ -4,10 +4,12 @@ export type ControlDockPlacement = 'right-bottom' | 'top' | 'bottom' | 'left-bot
 
 export interface AppPreferences {
   controlDockPlacement: ControlDockPlacement;
+  showOffscreenMarkerIndicator: boolean;
 }
 
 export const DEFAULT_APP_PREFERENCES: AppPreferences = {
-  controlDockPlacement: 'right-bottom'
+  controlDockPlacement: 'right-bottom',
+  showOffscreenMarkerIndicator: true
 };
 
 export interface ControlDockPlacementOption {
@@ -50,7 +52,11 @@ export function mergeAppPreferences(
     ...DEFAULT_APP_PREFERENCES,
     controlDockPlacement: isControlDockPlacement(storedPreferences?.controlDockPlacement)
       ? storedPreferences.controlDockPlacement
-      : DEFAULT_APP_PREFERENCES.controlDockPlacement
+      : DEFAULT_APP_PREFERENCES.controlDockPlacement,
+    showOffscreenMarkerIndicator:
+      typeof storedPreferences?.showOffscreenMarkerIndicator === 'boolean'
+        ? storedPreferences.showOffscreenMarkerIndicator
+        : DEFAULT_APP_PREFERENCES.showOffscreenMarkerIndicator
   };
 }
 

@@ -12,7 +12,9 @@ interface PreferencesSheetProps {
   isOpen: boolean;
   options: ControlDockPlacementOption[];
   placement: ControlDockPlacement;
+  showOffscreenMarkerIndicator: boolean;
   onClose: () => void;
+  onShowOffscreenMarkerIndicatorChange: (isEnabled: boolean) => void;
   onPlacementChange: (placement: ControlDockPlacement) => void;
 }
 
@@ -20,7 +22,9 @@ export function PreferencesSheet({
   isOpen,
   options,
   placement,
+  showOffscreenMarkerIndicator,
   onClose,
+  onShowOffscreenMarkerIndicatorChange,
   onPlacementChange
 }: PreferencesSheetProps) {
   const {
@@ -113,6 +117,40 @@ export function PreferencesSheet({
             <span className={placement === 'top' ? 'col-span-2 rounded-full bg-emerald-400' : 'col-span-2 rounded-full bg-slate-500/40 sm:bg-slate-300'} />
             <span className={placement === 'left-bottom' || placement === 'bottom' ? 'rounded-full bg-emerald-400' : 'rounded-full bg-slate-500/40 sm:bg-slate-300'} />
             <span className={placement === 'right-bottom' || placement === 'bottom' ? 'rounded-full bg-emerald-400' : 'rounded-full bg-slate-500/40 sm:bg-slate-300'} />
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onShowOffscreenMarkerIndicatorChange(!showOffscreenMarkerIndicator);
+          }}
+          className="mt-3 flex min-h-[5.75rem] w-full items-center justify-between gap-4 rounded-[1.5rem] border border-white/15 bg-white/[0.06] px-5 py-4 text-left text-slate-100 shadow-sm transition hover:bg-white/[0.09] sm:border-slate-200 sm:bg-slate-50 sm:text-slate-900 sm:hover:bg-white"
+          aria-pressed={showOffscreenMarkerIndicator}
+        >
+          <span className="min-w-0">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 sm:text-slate-500">
+              Search marker
+            </span>
+            <span className="mt-1 block text-lg font-semibold leading-6">
+              Off-screen indicator
+            </span>
+            <span className="mt-1 block text-xs text-slate-400 sm:text-slate-500">
+              {showOffscreenMarkerIndicator ? 'Shown when the pin is outside the map view' : 'Hidden while navigating the map'}
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className={`relative h-8 w-14 shrink-0 rounded-full border transition ${
+              showOffscreenMarkerIndicator
+                ? 'border-emerald-400/50 bg-emerald-500'
+                : 'border-white/15 bg-slate-700 sm:border-slate-200 sm:bg-slate-300'
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
+                showOffscreenMarkerIndicator ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
           </span>
         </button>
       </div>

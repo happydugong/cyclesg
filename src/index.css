@@ -65,19 +65,49 @@ button {
 
 .search-location-marker {
   position: relative;
-  width: 22px;
-  height: 22px;
-  border-radius: 9999px 9999px 9999px 0;
-  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
-  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.35);
+  width: 32px;
+  height: 40px;
 }
 
-.search-location-marker::before {
+.search-location-marker-pin {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 10px 16px rgba(20, 104, 58, 0.3));
+  will-change: transform, opacity;
+}
+
+.search-location-marker-pin svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.search-location-marker-pin::after {
   content: '';
   position: absolute;
-  inset: 5px;
+  left: 50%;
+  bottom: -7px;
+  width: 20px;
+  height: 7px;
   border-radius: 9999px;
-  background: #fff7ed;
+  background: rgba(15, 23, 42, 0.16);
+  filter: blur(2px);
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+.search-location-marker-drop {
+  animation: markerDrop 540ms cubic-bezier(0.2, 0.9, 0.28, 1.16) both;
+}
+
+.search-location-marker-exit {
+  animation: markerExit 180ms ease-in forwards;
+}
+
+.offscreen-marker-indicator {
+  transform: translate3d(-50%, -50%, 0);
+  will-change: left, top;
 }
 
 .mobile-safe-top {
@@ -121,4 +151,44 @@ button {
   left: 50%;
   bottom: var(--mobile-safe-bottom-offset);
   transform: translateX(-50%);
+}
+
+@keyframes markerDrop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -34px, 0) scale(0.86);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translate3d(0, 4px, 0) scale(1.04, 0.96);
+  }
+
+  78% {
+    transform: translate3d(0, -2px, 0) scale(0.98, 1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes markerExit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0) scale(0.68);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-location-marker-drop,
+  .search-location-marker-exit {
+    animation: none;
+  }
 }
