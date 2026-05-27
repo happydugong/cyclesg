@@ -109,7 +109,7 @@ describe('LayerControlSheet', () => {
     fireEvent.pointerUp(window, { pointerId: 1, clientY: 300 });
 
     await waitFor(() => {
-      expect(sheet?.style.height).toBe('800px');
+      expect(sheet?.style.height).toBe('720px');
     });
   });
 

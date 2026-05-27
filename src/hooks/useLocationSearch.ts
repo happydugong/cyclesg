@@ -14,6 +14,7 @@ interface UseLocationSearchOptions {
 
 export interface LocationSearchController {
   clear: () => void;
+  clearSelection: () => void;
   close: () => void;
   errorMessage: string | null;
   highlightedIndex: number;
@@ -53,6 +54,10 @@ export function useLocationSearch(
   const close = useCallback(() => {
     setIsOpen(false);
     setHighlightedIndexState(-1);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedResultId(null);
   }, []);
 
   const open = useCallback(() => {
@@ -183,6 +188,7 @@ export function useLocationSearch(
 
   return {
     clear,
+    clearSelection,
     close,
     errorMessage,
     highlightedIndex,

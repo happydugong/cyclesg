@@ -3,6 +3,7 @@ import type { LocationSearchController } from '../hooks/useLocationSearch';
 import type { LocationSearchResult } from '../services/locationSearch/nominatimService';
 
 interface SearchLocationBarProps {
+  isVisible: boolean;
   onSelect: (result: LocationSearchResult) => void;
   search: LocationSearchController;
 }
@@ -29,7 +30,7 @@ function LoadingSpinner() {
   return <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" aria-hidden="true" />;
 }
 
-export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) {
+export function SearchLocationBar({ isVisible, onSelect, search }: SearchLocationBarProps) {
   const {
     clear,
     close,
@@ -70,10 +71,15 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
   }, [close]);
 
   return (
-    <div className="mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-0 z-30 sm:px-4 sm:pt-4">
+    <div
+      aria-hidden={!isVisible}
+      className={`mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-0 z-30 transform-gpu transition-all duration-[250ms] ease-out motion-reduce:transition-none sm:px-4 sm:pt-4 ${
+        isVisible ? 'translate-y-0 opacity-100' : '-translate-y-5 opacity-0'
+      }`}
+    >
       <div ref={containerRef} className="mx-auto w-full max-w-2xl">
-        <div className="pointer-events-auto overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white/95 shadow-floating backdrop-blur-md">
-          <div className="flex min-h-[3.5rem] items-center gap-3 px-4 py-3">
+        <div className={`${isVisible ? 'pointer-events-auto' : 'pointer-events-none'} overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white/95 shadow-floating backdrop-blur-md`}>
+          <div className="flex h-14 items-center gap-3 px-4 py-2">
             <span className="shrink-0 text-slate-500">
               <SearchIcon />
             </span>
@@ -125,7 +131,8 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
               aria-autocomplete="list"
               aria-expanded={shouldShowDropdown}
               aria-controls="location-search-results"
-              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] text-slate-900 outline-none placeholder:text-slate-400"
+              tabIndex={isVisible ? undefined : -1}
+              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-base leading-6 text-slate-900 outline-none placeholder:text-slate-400"
             />
             {status === 'loading' ? <LoadingSpinner /> : null}
             {query.length > 0 ? (
@@ -136,6 +143,7 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
                   inputRef.current?.focus();
                 }}
                 aria-label="Clear search"
+                tabIndex={isVisible ? undefined : -1}
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
               >
                 <ClearIcon />
@@ -176,6 +184,7 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
                             inputRef.current?.blur();
                             close();
                           }}
+                          tabIndex={isVisible ? undefined : -1}
                           className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition ${
                             isActive ? 'bg-slate-100 text-slate-900' : 'text-slate-700 hover:bg-slate-50'
                           }`}

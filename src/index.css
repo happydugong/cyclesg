@@ -14,6 +14,7 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --mobile-safe-top-offset: max(2.25rem, calc(var(--safe-area-top) + 1rem));
+  --search-panel-clearance: calc(var(--mobile-safe-top-offset) + 4.5rem);
   --mobile-safe-x-offset: max(1.25rem, calc(var(--safe-area-left) + 1.25rem));
   --mobile-safe-right-offset: max(1.25rem, calc(var(--safe-area-right) + 1.25rem));
   --mobile-safe-bottom-offset: max(2.25rem, calc(var(--safe-area-bottom) + 1.25rem));
@@ -143,7 +144,7 @@ button {
 
 .control-dock-top {
   left: 50%;
-  top: max(5rem, calc(var(--safe-area-top) + 5rem));
+  top: var(--search-panel-clearance);
   transform: translateX(-50%);
 }
 

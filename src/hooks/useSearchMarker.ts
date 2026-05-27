@@ -13,6 +13,10 @@ export interface SearchMarkerLocation {
   latitude: number;
 }
 
+interface PlaceSearchMarkerOptions {
+  flyToMarker?: boolean;
+}
+
 function getMarkerElement(marker: Marker) {
   const element = (marker as Marker & { getElement?: () => HTMLElement }).getElement?.() ?? null;
   return element?.querySelector<HTMLElement>('.search-location-marker-pin') ?? element;
@@ -59,8 +63,8 @@ export function useSearchMarker(map: MapLibreMap | null) {
     }, MARKER_EXIT_ANIMATION_MS);
   }, []);
 
-  const focusSearchResult = useCallback(
-    (result: LocationSearchResult) => {
+  const placeSearchMarker = useCallback(
+    (location: SearchMarkerLocation, options: PlaceSearchMarkerOptions = {}) => {
       if (!map) {
         return;
       }
@@ -80,7 +84,7 @@ export function useSearchMarker(map: MapLibreMap | null) {
         markerElement.classList.remove('search-location-marker-exit', 'search-location-marker-drop');
       }
 
-      markerRef.current.setLngLat([result.longitude, result.latitude]).addTo(map);
+      markerRef.current.setLngLat([location.longitude, location.latitude]).addTo(map);
 
       if (markerElement) {
         // Restart the drop animation when an existing marker moves to a new result.
@@ -89,12 +93,28 @@ export function useSearchMarker(map: MapLibreMap | null) {
       }
 
       setSearchMarkerLocation({
-        longitude: result.longitude,
-        latitude: result.latitude
+        longitude: location.longitude,
+        latitude: location.latitude
       });
-      flyToSearchLocation(map, result.longitude, result.latitude);
+
+      if (options.flyToMarker) {
+        flyToSearchLocation(map, location.longitude, location.latitude);
+      }
     },
     [map]
+  );
+
+  const focusSearchResult = useCallback(
+    (result: LocationSearchResult) => {
+      placeSearchMarker(
+        {
+          longitude: result.longitude,
+          latitude: result.latitude
+        },
+        { flyToMarker: true }
+      );
+    },
+    [placeSearchMarker]
   );
 
   useEffect(() => {
@@ -111,6 +131,7 @@ export function useSearchMarker(map: MapLibreMap | null) {
   return {
     clearSearchMarker,
     focusSearchResult,
+    placeSearchMarker,
     searchMarkerLocation
   };
 }

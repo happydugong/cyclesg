@@ -26,6 +26,7 @@ import {
   type OverlaySourceGeoJson
 } from '../config/overlaySources';
 import { useLocationSearch } from '../hooks/useLocationSearch';
+import { useMapLongPressPin } from '../hooks/useMapLongPressPin';
 import { useSearchMarker } from '../hooks/useSearchMarker';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { trackEvent } from '../services/analytics/googleAnalytics';
@@ -149,12 +150,23 @@ export function MapPage() {
   const [overlayLayerVisibility, setOverlayLayerVisibility] = useState(readStoredOverlayVisibility);
   const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(readIsDesktopViewport);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(true);
   const [selectedRoute, setSelectedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [displayedRoute, setDisplayedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
   const followNoticeTimeoutRef = useRef<number | null>(null);
   const clearFollowNoticeTimeoutRef = useRef<number | null>(null);
-  const { clearSearchMarker, focusSearchResult, searchMarkerLocation } = useSearchMarker(mapRef.current);
+  const {
+    clearSearchMarker,
+    focusSearchResult,
+    placeSearchMarker,
+    searchMarkerLocation
+  } = useSearchMarker(mapRef.current);
+  const {
+    clearSelection: clearSearchSelection,
+    close: closeSearch,
+    selectResult: selectSearchResult
+  } = locationSearch;
 
   const clearSelectedRoute = useCallback(() => {
     setSelectedRoute(null);
@@ -347,24 +359,45 @@ export function MapPage() {
     openPreferencesPanel();
   }, [isPreferencesOpen, openPreferencesPanel]);
 
+  const toggleSearchVisibility = useCallback(() => {
+    setIsSearchVisible((current) => {
+      if (current && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      if (current) {
+        closeSearch();
+      }
+
+      return !current;
+    });
+  }, [closeSearch]);
+
+  const removeSearchPin = useCallback(() => {
+    clearSearchMarker();
+    clearSearchSelection();
+  }, [clearSearchMarker, clearSearchSelection]);
+
+  const dropPinAtMapLocation = useCallback(
+    (longitude: number, latitude: number) => {
+      setSelectedRoute(null);
+      setIsFollowingUser(false);
+      clearSearchSelection();
+      placeSearchMarker({ longitude, latitude });
+    },
+    [clearSearchSelection, placeSearchMarker]
+  );
+
   const selectSearchLocation = useCallback((result: LocationSearchResult) => {
     setSelectedRoute(null);
     setIsFollowingUser(false);
     focusSearchResult(result);
-    locationSearch.selectResult(result);
+    selectSearchResult(result);
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-  }, [focusSearchResult, locationSearch]);
-
-  useEffect(() => {
-    if (locationSearch.query.trim().length > 0) {
-      return;
-    }
-
-    clearSearchMarker();
-  }, [clearSearchMarker, locationSearch.query]);
+  }, [focusSearchResult, selectSearchResult]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -503,6 +536,11 @@ export function MapPage() {
       map.off('zoomstart', stopFollowingOnManualNavigation);
     };
   }, []);
+
+  useMapLongPressPin({
+    map: mapReady ? mapRef.current : null,
+    onLongPress: dropPinAtMapLocation
+  });
 
   useEffect(() => {
     let active = true;
@@ -644,7 +682,11 @@ export function MapPage() {
       {preferences.showOffscreenMarkerIndicator ? (
         <SearchMarkerOffscreenIndicator map={mapRef.current} target={searchMarkerLocation} />
       ) : null}
-      <SearchLocationBar onSelect={selectSearchLocation} search={locationSearch} />
+      <SearchLocationBar
+        isVisible={isSearchVisible}
+        onSelect={selectSearchLocation}
+        search={locationSearch}
+      />
       <LocationStatus state={geolocation} />
       {followNotice ? (
         <div className="mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-[5.5rem] z-20 flex justify-center">
@@ -731,13 +773,17 @@ export function MapPage() {
 
       {!shouldHideDock ? (
         <FloatingControlDock
+          hasSearchMarker={Boolean(searchMarkerLocation)}
           isFollowing={isFollowingUser}
           isLayerPanelOpen={isLayerPanelOpen}
           isPreferencesOpen={isPreferencesOpen}
+          isSearchVisible={isSearchVisible}
           locationDisabled={!geolocation.location}
           onLayerClick={toggleLayerPanel}
           onLocationClick={toggleFollowUser}
           onPreferencesClick={togglePreferencesPanel}
+          onRemovePinClick={removeSearchPin}
+          onSearchToggleClick={toggleSearchVisibility}
           placement={preferences.controlDockPlacement}
         />
       ) : null}

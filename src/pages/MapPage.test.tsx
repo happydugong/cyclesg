@@ -1155,9 +1155,135 @@ describe('MapPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /clear search/i }));
 
-    expect(testState.searchMarker.remove).toHaveBeenCalledTimes(1);
+    expect(testState.searchMarker.remove).not.toHaveBeenCalled();
     expect(searchInput).toHaveValue('');
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Bayfront Avenue, Singapore')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /remove pin/i }));
+
+    expect(testState.searchMarker.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('toggles search visibility without clearing search text or the active pin', async () => {
+    vi.useFakeTimers();
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          place_id: 202,
+          lat: '1.3008',
+          lon: '103.8372',
+          name: 'Orchard Road',
+          display_name: 'Orchard Road, Singapore'
+        }
+      ]
+    } as Response);
+
+    render(<MapPage />);
+
+    const searchInput = screen.getByRole('searchbox', { name: /search location/i });
+    fireEvent.change(searchInput, { target: { value: 'or' } });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+
+    fireEvent.click(screen.getByRole('option', { name: /orchard road/i }));
+
+    expect(testState.setSearchMarkerLngLat).toHaveBeenCalledWith([103.8372, 1.3008]);
+
+    fireEvent.click(screen.getByRole('button', { name: /hide search/i }));
+
+    expect(screen.queryByRole('searchbox', { name: /search location/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /remove pin/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /show search/i }));
+
+    expect(screen.getByRole('searchbox', { name: /search location/i })).toHaveValue('Orchard Road');
+    expect(testState.searchMarker.remove).not.toHaveBeenCalled();
+  });
+
+  it('drops a persistent pin after a long press on the map', async () => {
+    vi.useFakeTimers();
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    const longPressHandlers = testState.handlers.get('mousedown');
+    expect(longPressHandlers?.size).toBeGreaterThan(0);
+
+    const [handleLongPressStart] = Array.from(longPressHandlers ?? []);
+    handleLongPressStart({
+      lngLat: {
+        lng: 103.8519,
+        lat: 1.2903
+      },
+      point: {
+        x: 160,
+        y: 220
+      },
+      originalEvent: new MouseEvent('mousedown', { button: 0 })
+    } as never);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(520);
+    });
+
+    expect(testState.setSearchMarkerLngLat).toHaveBeenCalledWith([103.8519, 1.2903]);
+    expect(testState.addSearchMarkerTo).toHaveBeenCalledWith(testState.mapInstance);
+    expect(screen.getByRole('button', { name: /remove pin/i })).toBeInTheDocument();
+  });
+
+  it('does not drop a pin when a long press turns into a map move', async () => {
+    vi.useFakeTimers();
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    const [handleLongPressStart] = Array.from(testState.handlers.get('mousedown') ?? []);
+    const [handleLongPressMove] = Array.from(testState.handlers.get('mousemove') ?? []);
+
+    handleLongPressStart({
+      lngLat: {
+        lng: 103.8519,
+        lat: 1.2903
+      },
+      point: {
+        x: 160,
+        y: 220
+      },
+      originalEvent: new MouseEvent('mousedown', { button: 0 })
+    } as never);
+    handleLongPressMove({
+      point: {
+        x: 180,
+        y: 240
+      }
+    } as never);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(520);
+    });
+
+    expect(testState.setSearchMarkerLngLat).not.toHaveBeenCalledWith([103.8519, 1.2903]);
+    expect(screen.queryByRole('button', { name: /remove pin/i })).not.toBeInTheDocument();
   });
 });
