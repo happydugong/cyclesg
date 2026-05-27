@@ -378,6 +378,15 @@ export function MapPage() {
     clearSearchSelection();
   }, [clearSearchMarker, clearSearchSelection]);
 
+  const flyToSearchPin = useCallback(() => {
+    if (!mapRef.current || !searchMarkerLocation) {
+      return;
+    }
+
+    setIsFollowingUser(false);
+    flyToLocation(mapRef.current, searchMarkerLocation.longitude, searchMarkerLocation.latitude);
+  }, [searchMarkerLocation]);
+
   const dropPinAtMapLocation = useCallback(
     (longitude: number, latitude: number) => {
       setSelectedRoute(null);
@@ -680,7 +689,11 @@ export function MapPage() {
     <main className="relative h-screen overflow-hidden bg-slate-950">
       <MapViewport ref={mapContainerRef} />
       {preferences.showOffscreenMarkerIndicator ? (
-        <SearchMarkerOffscreenIndicator map={mapRef.current} target={searchMarkerLocation} />
+        <SearchMarkerOffscreenIndicator
+          map={mapRef.current}
+          onClick={flyToSearchPin}
+          target={searchMarkerLocation}
+        />
       ) : null}
       <SearchLocationBar
         isVisible={isSearchVisible}

@@ -163,6 +163,7 @@ const testState = vi.hoisted(() => {
   const easeTo = vi.fn();
   const flyTo = vi.fn();
   const moveLayer = vi.fn();
+  const searchMarkerInBounds = { value: true };
   const routeOverlayProps: Array<{
     data: { features: Array<{ properties: Record<string, unknown> }> };
     ids: { route: string };
@@ -191,7 +192,18 @@ const testState = vi.hoisted(() => {
     off: vi.fn((event: string, callback: (event?: { originalEvent?: unknown }) => void) => {
       handlers.get(event)?.delete(callback);
     }),
+    getBounds: vi.fn(() => ({
+      contains: vi.fn(() => searchMarkerInBounds.value)
+    })),
+    getContainer: vi.fn(() => ({
+      clientWidth: 400,
+      clientHeight: 300
+    })),
     getLayer: vi.fn((id: string) => ({ id })),
+    project: vi.fn(() => ({
+      x: 520,
+      y: 150
+    })),
     moveLayer,
     easeTo,
     flyTo,
@@ -212,6 +224,7 @@ const testState = vi.hoisted(() => {
     flyToLocation,
     routeOverlayProps,
     poiLayerProps,
+    searchMarkerInBounds,
     mapInstance
   };
 });
@@ -519,6 +532,7 @@ describe('MapPage', () => {
     testState.handlers.clear();
     testState.routeOverlayProps.length = 0;
     testState.poiLayerProps.length = 0;
+    testState.searchMarkerInBounds.value = true;
     window.localStorage.clear();
     testState.mapInstance.getLayer.mockImplementation((id: string) => ({ id }));
     testState.mapInstance.once.mockImplementation((event: string, callback: () => void) => {
@@ -541,6 +555,27 @@ describe('MapPage', () => {
     if (closeLayersButton) {
       fireEvent.click(closeLayersButton);
     }
+  }
+
+  function startLongPress({
+    longitude = 103.8519,
+    latitude = 1.2903,
+    x = 160,
+    y = 220
+  } = {}) {
+    const [handleLongPressStart] = Array.from(testState.handlers.get('mousedown') ?? []);
+
+    handleLongPressStart({
+      lngLat: {
+        lng: longitude,
+        lat: latitude
+      },
+      point: {
+        x,
+        y
+      },
+      originalEvent: new MouseEvent('mousedown', { button: 0 })
+    } as never);
   }
 
   it('shows a loading state and disables the center button while waiting for GPS', async () => {
@@ -1225,21 +1260,7 @@ describe('MapPage', () => {
 
     render(<MapPage />);
 
-    const longPressHandlers = testState.handlers.get('mousedown');
-    expect(longPressHandlers?.size).toBeGreaterThan(0);
-
-    const [handleLongPressStart] = Array.from(longPressHandlers ?? []);
-    handleLongPressStart({
-      lngLat: {
-        lng: 103.8519,
-        lat: 1.2903
-      },
-      point: {
-        x: 160,
-        y: 220
-      },
-      originalEvent: new MouseEvent('mousedown', { button: 0 })
-    } as never);
+    startLongPress();
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(520);
@@ -1248,6 +1269,29 @@ describe('MapPage', () => {
     expect(testState.setSearchMarkerLngLat).toHaveBeenCalledWith([103.8519, 1.2903]);
     expect(testState.addSearchMarkerTo).toHaveBeenCalledWith(testState.mapInstance);
     expect(screen.getByRole('button', { name: /remove pin/i })).toBeInTheDocument();
+  });
+
+  it('flies to the dropped pin when the off-screen indicator is clicked', async () => {
+    vi.useFakeTimers();
+    testState.searchMarkerInBounds.value = false;
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    startLongPress();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(540);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /fly to dropped pin/i }));
+
+    expect(testState.flyToLocation).toHaveBeenCalledWith(testState.mapInstance, 103.8519, 1.2903);
   });
 
   it('does not drop a pin when a long press turns into a map move', async () => {
@@ -1261,20 +1305,9 @@ describe('MapPage', () => {
 
     render(<MapPage />);
 
-    const [handleLongPressStart] = Array.from(testState.handlers.get('mousedown') ?? []);
     const [handleLongPressMove] = Array.from(testState.handlers.get('mousemove') ?? []);
 
-    handleLongPressStart({
-      lngLat: {
-        lng: 103.8519,
-        lat: 1.2903
-      },
-      point: {
-        x: 160,
-        y: 220
-      },
-      originalEvent: new MouseEvent('mousedown', { button: 0 })
-    } as never);
+    startLongPress();
     handleLongPressMove({
       point: {
         x: 180,

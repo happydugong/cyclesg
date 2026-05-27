@@ -11,9 +11,11 @@ interface OffscreenMarkerIndicatorState {
 
 export function SearchMarkerOffscreenIndicator({
   map,
+  onClick,
   target
 }: {
   map: MapLibreMap | null;
+  onClick: () => void;
   target: SearchMarkerLocation | null;
 }) {
   const frameRef = useRef<number | null>(null);
@@ -115,9 +117,11 @@ export function SearchMarkerOffscreenIndicator({
   } satisfies CSSProperties;
 
   return (
-    <div
-      aria-hidden="true"
-      className="offscreen-marker-indicator pointer-events-none absolute z-20 grid h-14 w-14 place-items-center rounded-full border border-white/35 bg-white/60 text-orange-600 opacity-70 shadow-floating backdrop-blur-md"
+    <button
+      type="button"
+      aria-label="Fly to dropped pin"
+      className="offscreen-marker-indicator absolute z-20 grid h-14 w-14 place-items-center rounded-full border border-white/35 bg-white/60 text-orange-600 opacity-70 shadow-floating backdrop-blur-md transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+      onClick={onClick}
       style={style}
     >
       <svg
@@ -134,6 +138,6 @@ export function SearchMarkerOffscreenIndicator({
           strokeWidth="1.5"
         />
       </svg>
-    </div>
+    </button>
   );
 }
