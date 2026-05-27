@@ -70,10 +70,10 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
   }, [close]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4">
+    <div className="mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-0 z-30 sm:px-4 sm:pt-4">
       <div ref={containerRef} className="mx-auto w-full max-w-2xl">
         <div className="pointer-events-auto overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white/95 shadow-floating backdrop-blur-md">
-          <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex min-h-[3.5rem] items-center gap-3 px-4 py-3">
             <span className="shrink-0 text-slate-500">
               <SearchIcon />
             </span>
@@ -136,7 +136,7 @@ export function SearchLocationBar({ onSelect, search }: SearchLocationBarProps) 
                   inputRef.current?.focus();
                 }}
                 aria-label="Clear search"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
               >
                 <ClearIcon />
               </button>

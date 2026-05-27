@@ -533,6 +533,16 @@ describe('MapPage', () => {
     vi.unstubAllGlobals();
   });
 
+  function closeLayerPanelIfOpen() {
+    const closeLayersButton = screen
+      .queryAllByRole('button', { name: /close map layers/i })
+      .find((button) => !button.hasAttribute('aria-pressed'));
+
+    if (closeLayersButton) {
+      fireEvent.click(closeLayersButton);
+    }
+  }
+
   it('shows a loading state and disables the center button while waiting for GPS', async () => {
     vi.mocked(useGeolocation).mockReturnValue({
       status: 'requesting',
@@ -544,10 +554,9 @@ describe('MapPage', () => {
     render(<MapPage />);
 
     expect(screen.getByText('Finding your GPS location…')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /center map on current location/i })).toBeDisabled();
 
     await waitFor(() => {
-      expect(screen.getByText('CycleSG')).toBeInTheDocument();
+      expect(screen.getByRole('searchbox', { name: /search location/i })).toBeInTheDocument();
     });
 
     expect(
@@ -560,6 +569,9 @@ describe('MapPage', () => {
     expect(screen.getByRole('button', { name: /food spots route/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^pcn route$/i })).toHaveLength(1);
 
+    closeLayerPanelIfOpen();
+
+    expect(screen.getByRole('button', { name: /center map on current location/i })).toBeDisabled();
     expect(screen.queryByRole('link', { name: /open source/i })).not.toBeInTheDocument();
   });
 
@@ -718,6 +730,65 @@ describe('MapPage', () => {
     });
   });
 
+  it('persists the floating control placement preference in localStorage', async () => {
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'requesting',
+      location: null,
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    closeLayerPanelIfOpen();
+
+    fireEvent.click(screen.getByRole('button', { name: /open preferences/i }));
+    fireEvent.click(screen.getByRole('button', { name: /floating controls position/i }));
+
+    await waitFor(() => {
+      expect(JSON.parse(window.localStorage.getItem('cyclesg.preferences.v1') ?? '{}')).toEqual(
+        expect.objectContaining({
+          controlDockPlacement: 'top'
+        })
+      );
+    });
+  });
+
+  it('loads the stored floating control placement on startup', async () => {
+    window.localStorage.setItem(
+      'cyclesg.preferences.v1',
+      JSON.stringify({
+        controlDockPlacement: 'left-bottom'
+      })
+    );
+
+    vi.mocked(useGeolocation).mockReturnValue({
+      status: 'ready',
+      location: {
+        latitude: 1.35,
+        longitude: 103.82,
+        accuracy: 10,
+        heading: null,
+        speed: null,
+        timestamp: 100
+      },
+      errorMessage: null,
+      refresh: vi.fn()
+    });
+
+    render(<MapPage />);
+
+    closeLayerPanelIfOpen();
+
+    await waitFor(() => {
+      expect(testState.setLngLat).toHaveBeenCalledWith([103.82, 1.35]);
+    });
+
+    const centerButton = screen.getByRole('button', { name: /center map on current location/i });
+
+    expect(centerButton.parentElement).toHaveClass('control-dock-left-bottom');
+  });
+
   it('clears a selected curated route when its overlay is hidden', async () => {
     vi.mocked(useGeolocation).mockReturnValue({
       status: 'requesting',
@@ -804,7 +875,7 @@ describe('MapPage', () => {
       'href',
       'https://jnhiew.blogspot.com/2014/12/cycling-map-in-singapore.html'
     );
-    fireEvent.click(screen.getAllByRole('button', { name: /open map layers/i })[0]);
+    fireEvent.click(screen.getByRole('button', { name: /close selected route details/i }));
 
     await waitFor(() => {
       expect(screen.queryByText('Map provided by Jonathan Hiew.')).not.toBeInTheDocument();
@@ -827,6 +898,8 @@ describe('MapPage', () => {
     });
 
     render(<MapPage />);
+
+    closeLayerPanelIfOpen();
 
     const button = screen.getByRole('button', { name: /center map on current location/i });
 
@@ -863,6 +936,8 @@ describe('MapPage', () => {
     });
 
     const { rerender } = render(<MapPage />);
+
+    closeLayerPanelIfOpen();
 
     const button = screen.getByRole('button', { name: /center map on current location/i });
 
@@ -928,6 +1003,8 @@ describe('MapPage', () => {
       await Promise.resolve();
     });
 
+    closeLayerPanelIfOpen();
+
     fireEvent.click(screen.getByRole('button', { name: /center map on current location/i }));
 
     expect(screen.getByText('Following your location')).toBeInTheDocument();
@@ -971,6 +1048,8 @@ describe('MapPage', () => {
     });
 
     render(<MapPage />);
+
+    closeLayerPanelIfOpen();
 
     const button = screen.getByRole('button', { name: /center map on current location/i });
 

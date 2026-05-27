@@ -13,7 +13,7 @@ export function LocationStatus({ state }: LocationStatusProps) {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-20 z-20 flex justify-center p-4 sm:top-24">
+    <div className="mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-[4.5rem] z-20 flex justify-center sm:top-24">
       <div className="max-w-sm rounded-2xl border border-white/15 bg-slate-950/85 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur">
         {isLoading ? (
           <div className="flex items-center gap-3">
@@ -26,7 +26,7 @@ export function LocationStatus({ state }: LocationStatusProps) {
             <button
               type="button"
               onClick={state.refresh}
-              className="pointer-events-auto shrink-0 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-white/20"
+              className="pointer-events-auto shrink-0 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/20"
             >
               Retry
             </button>

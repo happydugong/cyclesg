@@ -75,7 +75,7 @@ export function LayerControlSheetContent({
           aria-label={`${item.label} ${getOverlayContentLabel(item.contentType)}`}
           aria-pressed={itemVisible}
           onClick={() => onToggle(item.id, item.defaultVisible)}
-          className={`flex w-full items-start gap-3 rounded-2xl border px-3 py-3 text-left transition ${
+          className={`flex min-h-[4.5rem] w-full items-start gap-4 rounded-3xl border px-4 py-4 text-left transition ${
             itemVisible
               ? 'border-transparent text-slate-950 shadow-sm'
               : 'border-white/15 bg-white/[0.03] text-slate-100 sm:border-slate-200 sm:bg-slate-50 sm:text-slate-900'
@@ -141,7 +141,7 @@ export function LayerControlSheetContent({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 sm:border-slate-200 sm:bg-slate-100 sm:text-slate-600"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 sm:border-slate-200 sm:bg-slate-100 sm:text-slate-600"
             aria-label="Close map layers"
           >
             <span className="text-lg leading-none">×</span>

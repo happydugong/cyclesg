@@ -1,4 +1,3 @@
-import { Settings } from './icons/Settings';
 import { LayerControlSheetContent } from './LayerControlSheetContent';
 import {
   DESKTOP_PANEL_TRANSITION_MS,
@@ -30,9 +29,7 @@ interface LayerControlSheetProps {
   items: OverlayControlItem[];
   isOpen: boolean;
   isVisible: (item: OverlayControlItem) => boolean;
-  hideMobileTrigger?: boolean;
   onClose: () => void;
-  onOpen: () => void;
   onToggle: (id: string, defaultVisible: boolean) => void;
 }
 
@@ -40,9 +37,7 @@ export function LayerControlSheet({
   items,
   isOpen,
   isVisible,
-  hideMobileTrigger = false,
   onClose,
-  onOpen,
   onToggle
 }: LayerControlSheetProps) {
   const {
@@ -67,9 +62,7 @@ export function LayerControlSheet({
     return null;
   }
 
-  const shouldShowDesktopTrigger = isDesktop;
   const shouldShowDesktopPanel = isDesktop && isDesktopPanelRendered;
-  const shouldShowMobileTrigger = !isDesktop && !isOpen && !hideMobileTrigger;
   const shouldShowMobilePanel = !isDesktop && isMobileSheetRendered;
 
   const content = (
@@ -83,42 +76,8 @@ export function LayerControlSheet({
 
   return (
     <>
-      {shouldShowDesktopTrigger ? (
-        <div className="pointer-events-none absolute bottom-12 right-4 z-10 sm:right-8">
-          <button
-            type="button"
-            onClick={() => {
-              if (isOpen) {
-                onClose();
-                return;
-              }
-
-              onOpen();
-            }}
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-slate-950/90 text-white shadow-floating backdrop-blur transition duration-200 hover:bg-slate-700"
-            aria-label={isOpen ? 'Close map layers' : 'Open map layers'}
-            aria-pressed={isOpen}
-          >
-            <Settings />
-          </button>
-        </div>
-      ) : null}
-
-      {shouldShowMobileTrigger ? (
-        <div className="pointer-events-none absolute bottom-14 right-4 z-10">
-          <button
-            type="button"
-            onClick={onOpen}
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-slate-950/90 text-white shadow-floating backdrop-blur transition hover:bg-slate-900"
-            aria-label="Open map layers"
-          >
-            <Settings />
-          </button>
-        </div>
-      ) : null}
-
       {shouldShowDesktopPanel ? (
-        <div className="pointer-events-none absolute bottom-4 left-4 top-20 z-10">
+        <div className="pointer-events-none absolute bottom-4 left-4 top-20 z-20">
           <div
             className={`pointer-events-auto flex h-full w-[22rem] max-w-[22rem] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/90 text-slate-900 shadow-floating backdrop-blur-md will-change-transform transition-[transform,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
               isDesktopPanelVisible
@@ -133,8 +92,8 @@ export function LayerControlSheet({
       ) : null}
 
       {shouldShowMobilePanel ? (
-        <div className="pointer-events-none absolute inset-0 z-10">
-          <div className="absolute inset-x-0 bottom-6 px-4 pb-4 sm:bottom-0">
+        <div className="pointer-events-none absolute inset-0 z-20">
+          <div className="mobile-safe-bottom mobile-safe-x absolute inset-x-0 bottom-0 sm:bottom-0">
             <div
               ref={mobileSheetRef}
               className={`pointer-events-auto mx-auto flex w-full max-w-[32rem] flex-col overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/70 text-slate-100 shadow-floating backdrop-blur-md will-change-transform transition-[height,transform,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${

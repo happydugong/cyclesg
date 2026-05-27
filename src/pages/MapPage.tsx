@@ -1,16 +1,21 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Marker, Map as MapLibreMap } from 'maplibre-gl';
-import { CenterOnMeButton } from '../components/CenterOnMeButton';
 import { CuratedPoiLayer } from '../components/CuratedPoiLayer';
+import { FloatingControlDock } from '../components/FloatingControlDock';
 import {
   LayerControlSheet,
   type OverlayControlItem
 } from '../components/LayerControlSheet';
 import { LocationStatus } from '../components/LocationStatus';
 import { MapViewport } from '../components/MapViewport';
+import { PreferencesSheet } from '../components/PreferencesSheet';
 import { RouteOverlayLayer } from '../components/RouteOverlayLayer';
 import { SearchLocationBar } from '../components/SearchLocationBar';
 import { SelectedRouteCard } from '../components/SelectedRouteCard';
+import {
+  readIsDesktopViewport,
+  useIsDesktopViewport
+} from '../components/useIsDesktopViewport';
 import {
   OVERLAY_SOURCES,
   isCuratedFileOverlaySource,
@@ -24,6 +29,11 @@ import { useSearchMarker } from '../hooks/useSearchMarker';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { trackEvent } from '../services/analytics/googleAnalytics';
 import { createMap, createUserLocationMarker, flyToLocation } from '../services/map/mapService';
+import {
+  CONTROL_DOCK_PLACEMENT_OPTIONS,
+  readStoredAppPreferences,
+  writeStoredAppPreferences
+} from '../services/preferences/preferences';
 import type { LocationSearchResult } from '../services/locationSearch/nominatimService';
 import type { CuratedRoutesGeoJson, OverlayPoiProperties } from '../types/curatedRoutes';
 import type { UnifiedRouteProperties } from '../types/routes';
@@ -39,18 +49,9 @@ import {
 } from './mapPageOverlayUtils';
 
 const OVERLAY_VISIBILITY_STORAGE_KEY = 'cyclesg.curatedOverlayVisibility.v1';
-const LAYER_PANEL_MEDIA_QUERY = '(min-width: 640px)';
 
 interface OverlaySourceState extends OverlaySourceRuntimeState {
   error: string | null;
-}
-
-function readInitialLayerPanelOpen() {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return true;
-  }
-
-  return window.matchMedia(LAYER_PANEL_MEDIA_QUERY).matches;
 }
 
 function readStoredOverlayVisibility() {
@@ -137,13 +138,16 @@ export function MapPage() {
   const hasAutoCenteredRef = useRef(false);
   const geolocation = useGeolocation();
   const locationSearch = useLocationSearch();
+  const isDesktopViewport = useIsDesktopViewport();
+  const [preferences, setPreferences] = useState(readStoredAppPreferences);
   const [mapReady, setMapReady] = useState(false);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
   const [followNotice, setFollowNotice] = useState<string | null>(null);
   const [isFollowNoticeVisible, setIsFollowNoticeVisible] = useState(false);
   const [overlayStates, setOverlayStates] = useState(createInitialOverlayStates);
   const [overlayLayerVisibility, setOverlayLayerVisibility] = useState(readStoredOverlayVisibility);
-  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(readInitialLayerPanelOpen);
+  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(readIsDesktopViewport);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [displayedRoute, setDisplayedRoute] = useState<UnifiedRouteProperties | null>(null);
   const [isRouteCardVisible, setIsRouteCardVisible] = useState(false);
@@ -298,6 +302,9 @@ export function MapPage() {
       ),
     [overlayStates]
   );
+  const isLayerSheetVisible = isLayerPanelOpen && overlayPills.length > 0;
+  const shouldHideDock =
+    !isDesktopViewport && (isLayerSheetVisible || isPreferencesOpen || Boolean(displayedRoute));
 
   const toggleOverlayVisibility = useCallback((overlayLayerId: string, defaultVisible: boolean) => {
     setOverlayLayerVisibility((current) => ({
@@ -311,8 +318,33 @@ export function MapPage() {
 
   const openLayerPanel = useCallback(() => {
     setSelectedRoute(null);
+    setIsPreferencesOpen(false);
     setIsLayerPanelOpen(true);
   }, []);
+
+  const openPreferencesPanel = useCallback(() => {
+    setSelectedRoute(null);
+    setIsLayerPanelOpen(false);
+    setIsPreferencesOpen(true);
+  }, []);
+
+  const toggleLayerPanel = useCallback(() => {
+    if (isLayerPanelOpen) {
+      setIsLayerPanelOpen(false);
+      return;
+    }
+
+    openLayerPanel();
+  }, [isLayerPanelOpen, openLayerPanel]);
+
+  const togglePreferencesPanel = useCallback(() => {
+    if (isPreferencesOpen) {
+      setIsPreferencesOpen(false);
+      return;
+    }
+
+    openPreferencesPanel();
+  }, [isPreferencesOpen, openPreferencesPanel]);
 
   const selectSearchLocation = useCallback((result: LocationSearchResult) => {
     setSelectedRoute(null);
@@ -331,6 +363,10 @@ export function MapPage() {
       JSON.stringify(overlayLayerVisibility)
     );
   }, [overlayLayerVisibility]);
+
+  useEffect(() => {
+    writeStoredAppPreferences(preferences);
+  }, [preferences]);
 
   useEffect(() => {
     if (!selectedRoute?.overlayLayerId) {
@@ -354,6 +390,7 @@ export function MapPage() {
     }
 
     setIsLayerPanelOpen(false);
+    setIsPreferencesOpen(false);
   }, [displayedRoute]);
 
   useEffect(() => {
@@ -598,7 +635,7 @@ export function MapPage() {
       <SearchLocationBar onSelect={selectSearchLocation} search={locationSearch} />
       <LocationStatus state={geolocation} />
       {followNotice ? (
-        <div className="pointer-events-none absolute inset-x-0 top-24 z-20 flex justify-center px-4">
+        <div className="mobile-safe-top mobile-safe-x pointer-events-none absolute inset-x-0 top-[5.5rem] z-20 flex justify-center">
           <div
             className={`animate-followNoticeIn min-w-[12.5rem] rounded-full border border-white/35 bg-slate-100/90 px-5 py-2 text-center text-sm text-slate-700 shadow-floating backdrop-blur-md transition-all duration-220 ease-out motion-reduce:transition-none ${
               isFollowNoticeVisible
@@ -652,21 +689,39 @@ export function MapPage() {
           ))
         : null}
 
-      <div className="pointer-events-none absolute left-4 top-[5.25rem] z-10 hidden items-start sm:flex">
-        <div className="rounded-[22px] border border-white/15 bg-slate-950/55 px-4 py-3 text-sm text-slate-100 shadow-floating backdrop-blur-md">
-          <div>CycleSG</div>
-        </div>
-      </div>
-
       <LayerControlSheet
         items={overlayPills}
         isOpen={isLayerPanelOpen}
         isVisible={isOverlayLayerVisible}
-        hideMobileTrigger={Boolean(displayedRoute)}
         onClose={() => setIsLayerPanelOpen(false)}
-        onOpen={openLayerPanel}
         onToggle={toggleOverlayVisibility}
       />
+
+      <PreferencesSheet
+        isOpen={isPreferencesOpen}
+        options={CONTROL_DOCK_PLACEMENT_OPTIONS}
+        placement={preferences.controlDockPlacement}
+        onClose={() => setIsPreferencesOpen(false)}
+        onPlacementChange={(controlDockPlacement) => {
+          setPreferences((current) => ({
+            ...current,
+            controlDockPlacement
+          }));
+        }}
+      />
+
+      {!shouldHideDock ? (
+        <FloatingControlDock
+          isFollowing={isFollowingUser}
+          isLayerPanelOpen={isLayerPanelOpen}
+          isPreferencesOpen={isPreferencesOpen}
+          locationDisabled={!geolocation.location}
+          onLayerClick={toggleLayerPanel}
+          onLocationClick={toggleFollowUser}
+          onPreferencesClick={togglePreferencesPanel}
+          placement={preferences.controlDockPlacement}
+        />
+      ) : null}
 
       <SelectedRouteCard
         authorUrl={authorUrl}
@@ -679,19 +734,13 @@ export function MapPage() {
       />
 
       {overlayErrors.length > 0 ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
+        <div className="mobile-safe-bottom mobile-safe-x pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center">
           <div className="rounded-full border border-rose-200/70 bg-white/90 px-4 py-2 text-xs text-rose-700 shadow-floating backdrop-blur-md">
             {overlayErrors.join(' ')}
           </div>
         </div>
       ) : null}
 
-      <CenterOnMeButton
-        disabled={!geolocation.location}
-        hideOnMobile={isLayerPanelOpen || Boolean(displayedRoute)}
-        isFollowing={isFollowingUser}
-        onClick={toggleFollowUser}
-      />
     </main>
   );
 }

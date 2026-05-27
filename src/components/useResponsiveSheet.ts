@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { TouchEvent as ReactTouchEvent } from 'react';
+import { useIsDesktopViewport } from './useIsDesktopViewport';
 
 export const MOBILE_SHEET_TRANSITION_MS = 320;
 export const DESKTOP_PANEL_TRANSITION_MS = 220;
@@ -8,7 +9,6 @@ const MOBILE_SHEET_MINIMIZED_HEIGHT = 110;
 const MOBILE_SHEET_MAX_RATIO = 0.8;
 const MOBILE_SHEET_MIN_HEIGHT = 100;
 const MOBILE_SHEET_DRAG_THRESHOLD = 48;
-const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
 
 export type MobileSheetPosition = 'minimized' | 'mid' | 'full';
 
@@ -47,13 +47,7 @@ interface UseResponsiveSheetOptions {
 }
 
 export function useResponsiveSheet({ isOpen, onClose }: UseResponsiveSheetOptions) {
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return true;
-    }
-
-    return window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
-  });
+  const isDesktop = useIsDesktopViewport();
   const [mobileSheetPosition, setMobileSheetPosition] = useState<MobileSheetPosition>('mid');
   const [mobileSheetHeight, setMobileSheetHeight] = useState(() => getSheetHeight('mid'));
   const [isDesktopPanelRendered, setIsDesktopPanelRendered] = useState(isOpen);
@@ -76,24 +70,6 @@ export function useResponsiveSheet({ isOpen, onClose }: UseResponsiveSheetOption
     startPosition: MobileSheetPosition;
     startY: number;
   } | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsDesktop(event.matches);
-    };
-
-    setIsDesktop(mediaQuery.matches);
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {

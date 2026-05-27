@@ -195,7 +195,7 @@ export function SelectedRouteCard({
 
       {shouldShowMobilePanel ? (
         <div className="pointer-events-none absolute inset-0 z-20">
-          <div className="absolute inset-x-0 bottom-6 px-4 pb-4 sm:bottom-0">
+          <div className="mobile-safe-bottom mobile-safe-x absolute inset-x-0 bottom-0 sm:bottom-0">
             <div
               ref={mobileSheetRef}
               className={`pointer-events-auto mx-auto flex w-full max-w-[32rem] flex-col overflow-hidden rounded-[28px] border border-slate-900/10 bg-white/90 text-slate-700 shadow-floating backdrop-blur-md will-change-transform transition-[height,transform,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${

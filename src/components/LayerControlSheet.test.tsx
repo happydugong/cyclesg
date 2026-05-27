@@ -94,7 +94,6 @@ describe('LayerControlSheet', () => {
         isOpen
         isVisible={() => true}
         onClose={vi.fn()}
-        onOpen={vi.fn()}
         onToggle={vi.fn()}
       />
     );
@@ -122,7 +121,6 @@ describe('LayerControlSheet', () => {
         isOpen
         isVisible={() => true}
         onClose={onClose}
-        onOpen={vi.fn()}
         onToggle={vi.fn()}
       />
     );
@@ -145,7 +143,6 @@ describe('LayerControlSheet', () => {
         isOpen
         isVisible={() => true}
         onClose={vi.fn()}
-        onOpen={vi.fn()}
         onToggle={vi.fn()}
       />
     );
@@ -162,7 +159,6 @@ describe('LayerControlSheet', () => {
         isOpen
         isVisible={() => true}
         onClose={vi.fn()}
-        onOpen={vi.fn()}
         onToggle={vi.fn()}
       />
     );
