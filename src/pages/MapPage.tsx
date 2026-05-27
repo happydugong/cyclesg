@@ -560,16 +560,24 @@ export function MapPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      const orderedRouteLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) => [
-        overlayLayer.routeLayerIds.route,
-        overlayLayer.routeLayerIds.hitArea,
-        overlayLayer.routeLayerIds.selected
-      ]);
-      const orderedPoiLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) => [
-        overlayLayer.poiLayerIds.circle,
-        overlayLayer.poiLayerIds.icon,
-        overlayLayer.poiLayerIds.label
-      ]);
+      const orderedRouteLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) =>
+        overlayLayer.routeData
+          ? [
+              overlayLayer.routeLayerIds.route,
+              overlayLayer.routeLayerIds.hitArea,
+              overlayLayer.routeLayerIds.selected
+            ]
+          : []
+      );
+      const orderedPoiLayerIds = visibleOverlayLayerViewModels.flatMap((overlayLayer) =>
+        overlayLayer.poiData
+          ? [
+              overlayLayer.poiLayerIds.circle,
+              overlayLayer.poiLayerIds.icon,
+              overlayLayer.poiLayerIds.label
+            ]
+          : []
+      );
       const orderedLayerIds = [...orderedRouteLayerIds, ...orderedPoiLayerIds];
 
       for (const layerId of orderedLayerIds) {

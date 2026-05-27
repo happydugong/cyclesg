@@ -1,12 +1,6 @@
 import overlaySourcesJson from './overlay-sources.generated.json';
-import { loadCyclingPathGeoJson } from '../services/cyclingPath/cyclingPathService';
 import { loadCuratedRoutesGeoJson } from '../services/curatedRoutes/curatedRoutesService';
-import { loadPcnGeoJson } from '../services/pcn/pcnService';
-import { loadRailStationGeoJson } from '../services/railStation/railStationService';
-import type { CyclingPathGeoJson } from '../types/cyclingPath';
 import type { CuratedRoutesGeoJson } from '../types/curatedRoutes';
-import type { PcnGeoJson } from '../types/pcn';
-import type { RailStationGeoJson } from '../types/railStation';
 
 export type OverlaySourceKind = 'data-gov-sg' | 'google-my-maps' | 'local-file';
 export type FeatureAdapter =
@@ -106,19 +100,9 @@ export type OverlaySourceConfig =
   | DataGovOverlaySourceConfig
   | MyMapsOverlaySourceConfig
   | LocalFileOverlaySourceConfig;
-export type OverlaySourceGeoJson =
-  | PcnGeoJson
-  | CyclingPathGeoJson
-  | RailStationGeoJson
-  | CuratedRoutesGeoJson;
+export type OverlaySourceGeoJson = CuratedRoutesGeoJson;
 
 export const OVERLAY_SOURCES = overlaySourcesJson as OverlaySourceConfig[];
-
-export function isMyMapsOverlaySource(
-  source: OverlaySourceConfig
-): source is MyMapsOverlaySourceConfig {
-  return source.sourceKind === 'google-my-maps';
-}
 
 export function isCuratedFileOverlaySource(
   source: OverlaySourceConfig
@@ -132,22 +116,8 @@ export function isDataGovOverlaySource(
   return source.sourceKind === 'data-gov-sg';
 }
 
-export function getOverlaySourcesByKind(sourceKind: OverlaySourceKind) {
-  return OVERLAY_SOURCES.filter((source) => source.sourceKind === sourceKind);
-}
-
 export async function loadOverlaySourceGeoJson(
   source: OverlaySourceConfig
 ): Promise<OverlaySourceGeoJson> {
-  switch (source.featureAdapter) {
-    case 'pcn':
-      return loadPcnGeoJson();
-    case 'cycling-path':
-      return loadCyclingPathGeoJson();
-    case 'rail-station':
-      return loadRailStationGeoJson();
-    case 'my-maps':
-    case 'strava-gpx':
-      return loadCuratedRoutesGeoJson(source.asset.geoJson);
-  }
+  return loadCuratedRoutesGeoJson(source.asset.geoJson);
 }

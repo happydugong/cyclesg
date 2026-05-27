@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-26T17:56:09.175Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "dino-east-loop",
+      "name": "T Rex",
+      "sourcePath": "/Users/huishun/Desktop/cyclesg/data/dino-east-loop/raw/source.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0
+    }
+  ]
+}

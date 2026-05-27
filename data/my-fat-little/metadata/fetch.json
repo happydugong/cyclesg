@@ -1,0 +1,7 @@
+{
+  "sourceId": "my-fat-little",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/my-fat-little/raw/source.gpx",
+  "importedAt": null
+}

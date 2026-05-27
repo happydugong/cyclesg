@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a seahorse shape.",
   "asset": {
-    "geoJson": "src/assets/Group_drawing_for_Sea_horse_.geojson",
-    "metadata": "src/assets/Group_drawing_for_Sea_horse_-metadata.json"
+    "geoJson": "data/group-drawing-for-sea-horse/converted/overlay.geojson",
+    "metadata": "data/group-drawing-for-sea-horse/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#0F766E",

@@ -1,0 +1,7 @@
+{
+  "sourceId": "santa-claus-ride",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/santa-claus-ride/raw/source.gpx",
+  "importedAt": null
+}

@@ -1,8 +1,156 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cyclingPathFixture } from '../test/fixtures/cyclingPathFixture';
 import { curatedRoutesFixture } from '../test/fixtures/curatedRoutesFixture';
-import { pcnFixture } from '../test/fixtures/pcnFixture';
+
+function buildOfficialPcnFixture() {
+  return {
+    type: 'FeatureCollection' as const,
+    features: [
+      {
+        type: 'Feature' as const,
+        properties: {
+          featureId: 'pcn-1',
+          routeId: 'pcn-1',
+          overlayId: 'official-pcn',
+          overlayName: 'PCN',
+          sourceType: 'data-gov-sg' as const,
+          routeType: 'pcn' as const,
+          routeSource: 'official-pcn' as const,
+          routeName: 'PCN Route',
+          routeGroup: 'Loop A',
+          routeLength: 1000,
+          name: 'PCN Route',
+          description: null,
+          layerName: null,
+          geometryKind: 'line' as const,
+          styleUrl: null,
+          styleId: null,
+          iconHref: null,
+          strokeColor: null,
+          strokeWidth: null,
+          overlayLayerId: 'official-pcn'
+        },
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: [
+            [103.8, 1.3],
+            [103.81, 1.31]
+          ]
+        }
+      }
+    ]
+  };
+}
+
+function buildOfficialCyclingPathFixture() {
+  return {
+    type: 'FeatureCollection' as const,
+    features: [
+      {
+        type: 'Feature' as const,
+        properties: {
+          featureId: 'cycling-1',
+          routeId: 'cycling-1',
+          overlayId: 'official-cycling-path',
+          overlayName: 'Cycling Path',
+          sourceType: 'data-gov-sg' as const,
+          routeType: 'cycling-path' as const,
+          routeSource: 'cycling-path' as const,
+          routeName: 'Cycling Path Route',
+          routeGroup: 'LTA Network',
+          routeLength: 2000,
+          name: 'Cycling Path Route',
+          description: null,
+          layerName: null,
+          geometryKind: 'line' as const,
+          styleUrl: null,
+          styleId: null,
+          iconHref: null,
+          strokeColor: null,
+          strokeWidth: null,
+          overlayLayerId: 'official-cycling-path'
+        },
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: [
+            [103.82, 1.32],
+            [103.83, 1.33]
+          ]
+        }
+      }
+    ]
+  };
+}
+
+function buildOfficialRailStationFixture() {
+  return {
+    type: 'FeatureCollection' as const,
+    features: [
+      {
+        type: 'Feature' as const,
+        properties: {
+          featureId: 'rail-station-36',
+          routeId: 'rail-station-36',
+          overlayId: 'official-rail-station',
+          overlayName: 'MRT/LRT Stations',
+          sourceType: 'data-gov-sg' as const,
+          routeType: 'rail-station' as const,
+          routeSource: 'official-rail-station' as const,
+          routeName: 'Punggol Central',
+          routeGroup: 'MRT/LRT Stations',
+          routeLength: null,
+          name: 'Punggol Central',
+          description: 'LRT Aboveground station',
+          layerName: null,
+          geometryKind: 'point' as const,
+          styleUrl: null,
+          styleId: null,
+          iconHref: null,
+          poiIconHref: null,
+          poiIconId: null,
+          strokeColor: null,
+          strokeWidth: null,
+          overlayLayerId: 'official-rail-station'
+        },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [103.9026, 1.4057]
+        }
+      },
+      {
+        type: 'Feature' as const,
+        properties: {
+          featureId: 'rail-station-37',
+          routeId: 'rail-station-37',
+          overlayId: 'official-rail-station',
+          overlayName: 'MRT/LRT Stations',
+          sourceType: 'data-gov-sg' as const,
+          routeType: 'rail-station' as const,
+          routeSource: 'official-rail-station' as const,
+          routeName: 'Unnamed Station',
+          routeGroup: 'MRT/LRT Stations',
+          routeLength: null,
+          name: 'Unnamed Station',
+          description: 'MRT Underground station',
+          layerName: null,
+          geometryKind: 'point' as const,
+          styleUrl: null,
+          styleId: null,
+          iconHref: null,
+          poiIconHref: null,
+          poiIconId: null,
+          strokeColor: null,
+          strokeWidth: null,
+          overlayLayerId: 'official-rail-station'
+        },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [103.9035, 1.4075]
+        }
+      }
+    ]
+  };
+}
 
 const testState = vi.hoisted(() => {
   const addTo = vi.fn();
@@ -78,8 +226,8 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
       defaultVisible: true,
       description: 'Official NParks park connector routes.',
       asset: {
-        geoJson: 'src/assets/pcn.geojson',
-        metadata: 'src/assets/pcn-metadata.json'
+        geoJson: 'data/official-pcn/converted/overlay.geojson',
+        metadata: 'data/official-pcn/metadata/convert.json'
       },
       sync: {
         datasetId: 'pcn-dataset',
@@ -102,8 +250,8 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
       defaultVisible: true,
       description: 'Official LTA cycling path routes.',
       asset: {
-        geoJson: 'src/assets/cycling-paths.geojson',
-        metadata: 'src/assets/cycling-paths-metadata.json'
+        geoJson: 'data/official-cycling-path/converted/overlay.geojson',
+        metadata: 'data/official-cycling-path/metadata/convert.json'
       },
       sync: {
         datasetId: 'cycling-dataset',
@@ -126,8 +274,8 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
       defaultVisible: true,
       description: 'Official URA Master Plan 2019 MRT/LRT station outlines shown as station markers.',
       asset: {
-        geoJson: 'src/assets/rail-stations.geojson',
-        metadata: 'src/assets/rail-stations-metadata.json'
+        geoJson: 'data/official-rail-station/converted/overlay.geojson',
+        metadata: 'data/official-rail-station/metadata/convert.json'
       },
       sync: {
         datasetId: 'rail-station-dataset',
@@ -150,8 +298,8 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
       defaultVisible: false,
       description: 'Jonathan Route Google My Maps layer.',
       asset: {
-        geoJson: 'src/assets/curated-routes.geojson',
-        metadata: 'src/assets/curated-routes-metadata.json'
+        geoJson: 'data/jonathan-route/converted/overlay.geojson',
+        metadata: 'data/jonathan-route/metadata/convert.json'
       },
       sync: {
         sourceUrl: 'https://example.com/cycling.kml'
@@ -197,8 +345,8 @@ vi.mock('../config/overlay-sources.generated.json', () => ({
       defaultVisible: false,
       description: 'Food Stops Google My Maps layer.',
       asset: {
-        geoJson: 'src/assets/curated-routes.geojson',
-        metadata: 'src/assets/curated-routes-metadata.json'
+        geoJson: 'data/food-stops/converted/overlay.geojson',
+        metadata: 'data/food-stops/metadata/convert.json'
       },
       sync: {
         sourceUrl: 'https://example.com/food.kml'
@@ -248,105 +396,67 @@ vi.mock('../services/map/mapService', () => ({
   })
 }));
 
-vi.mock('../services/pcn/pcnService', () => ({
-  loadPcnGeoJson: vi.fn(() => Promise.resolve(pcnFixture))
-}));
-
-vi.mock('../services/cyclingPath/cyclingPathService', () => ({
-  loadCyclingPathGeoJson: vi.fn(() => Promise.resolve(cyclingPathFixture))
-}));
-
-vi.mock('../services/railStation/railStationService', () => ({
-  loadRailStationGeoJson: vi.fn(() =>
-    Promise.resolve({
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [103.90280826828767, 1.4063299295444645],
-                [103.90228586062663, 1.4053811042860254],
-                [103.90232698542147, 1.4053586486262621],
-                [103.90280826828767, 1.4063299295444645]
-              ]
-            ]
-          },
-          properties: {
-            OBJECTID: 36,
-            GRND_LEVEL: 'ABOVEGROUND',
-            RAIL_TYPE: 'LRT',
-            NAME: 'PUNGGOL CENTRAL',
-            INC_CRC: '5ED154CD47409638',
-            FMEL_UPD_D: '20191209180316',
-            'SHAPE.AREA': 11506.493908565,
-            'SHAPE.LEN': 648.115901396167
-          }
-        },
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [103.903, 1.407],
-                [103.904, 1.407],
-                [103.904, 1.408],
-                [103.903, 1.407]
-              ]
-            ]
-          },
-          properties: {
-            OBJECTID: 37,
-            GRND_LEVEL: 'UNDERGROUND',
-            RAIL_TYPE: 'MRT',
-            NAME: null,
-            INC_CRC: '6E7738D952D979E6',
-            FMEL_UPD_D: '20191209180316',
-            'SHAPE.AREA': 401.26602951,
-            'SHAPE.LEN': 86.37980235812
-          }
-        }
-      ]
-    })
-  )
-}));
-
 vi.mock('../services/curatedRoutes/curatedRoutesService', () => ({
-  loadCuratedRoutesGeoJson: vi.fn(() =>
-    Promise.resolve({
+  loadCuratedRoutesGeoJson: vi.fn((assetPath?: string) => {
+    if (assetPath === 'data/official-pcn/converted/overlay.geojson') {
+      return Promise.resolve(buildOfficialPcnFixture());
+    }
+
+    if (assetPath === 'data/official-cycling-path/converted/overlay.geojson') {
+      return Promise.resolve(buildOfficialCyclingPathFixture());
+    }
+
+    if (assetPath === 'data/official-rail-station/converted/overlay.geojson') {
+      return Promise.resolve(buildOfficialRailStationFixture());
+    }
+
+    if (assetPath === 'data/jonathan-route/converted/overlay.geojson') {
+      return Promise.resolve({
+        ...curatedRoutesFixture,
+        features: [
+          ...curatedRoutesFixture.features,
+          {
+            ...curatedRoutesFixture.features[0],
+            properties: {
+              ...curatedRoutesFixture.features[0].properties,
+              featureId: 'pcn-hidden-line-1',
+              routeId: 'pcn-hidden-line-1',
+              routeName: 'Hidden PCN Line',
+              name: 'Hidden PCN Line',
+              layerName: 'PCN',
+              routeGroup: 'PCN'
+            }
+          }
+        ]
+      });
+    }
+
+    return Promise.resolve({
       ...curatedRoutesFixture,
-      features: [
-        ...curatedRoutesFixture.features,
-        {
-          ...curatedRoutesFixture.features[0],
-          properties: {
-            ...curatedRoutesFixture.features[0].properties,
-            featureId: 'pcn-hidden-line-1',
-            name: 'Hidden PCN Line',
-            layerName: 'PCN'
-          }
-        },
-        ...curatedRoutesFixture.features.map((feature) => ({
-          ...feature,
-          properties: {
-            ...feature.properties,
-            featureId:
-              feature.properties.geometryKind === 'line'
-                ? 'city-bites-line-1'
-                : 'snack-stop-point-1',
-            overlayId: 'food-stops',
-            overlayName: 'Food Stops',
-            name:
-              feature.properties.geometryKind === 'line' ? 'City Bites Connector' : 'Snack stop',
-            layerName: feature.properties.geometryKind === 'line' ? 'Food spots' : 'Food POIs'
-          }
-        }))
-      ]
-    })
-  )
+      features: curatedRoutesFixture.features.map((feature) => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          featureId:
+            feature.properties.geometryKind === 'line'
+              ? 'city-bites-line-1'
+              : 'snack-stop-point-1',
+          routeId:
+            feature.properties.geometryKind === 'line'
+              ? 'city-bites-line-1'
+              : 'snack-stop-point-1',
+          overlayId: 'food-stops',
+          overlayName: 'Food Stops',
+          routeName:
+            feature.properties.geometryKind === 'line' ? 'City Bites Connector' : 'Snack stop',
+          routeGroup: feature.properties.geometryKind === 'line' ? 'Food spots' : 'Food POIs',
+          name:
+            feature.properties.geometryKind === 'line' ? 'City Bites Connector' : 'Snack stop',
+          layerName: feature.properties.geometryKind === 'line' ? 'Food spots' : 'Food POIs'
+        }
+      }))
+    });
+  })
 }));
 
 vi.mock('../hooks/useGeolocation', () => ({

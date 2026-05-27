@@ -10,10 +10,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "generate:overlay-sources": "node ./scripts/generate-overlay-sources.mjs",
-    "convert:gpx": "node ./scripts/convert-gpx-to-geojson.mjs",
-    "sync:pcn": "node ./scripts/sync-pcn.mjs",
-    "sync:my-maps-overlays": "node ./scripts/my-maps-sync.mjs"
+    "generate:overlay-sources": "node ./scripts/overlay/generate-overlay-sources.mjs",
+    "overlay:fetch:data-gov": "node ./scripts/overlay/fetch-data-gov.mjs",
+    "overlay:convert:data-gov": "node ./scripts/overlay/convert-data-gov.mjs",
+    "overlay:fetch:my-maps": "node ./scripts/overlay/fetch-my-maps.mjs",
+    "overlay:convert:my-maps": "node ./scripts/overlay/convert-my-maps.mjs",
+    "overlay:convert:gpx": "node ./scripts/overlay/convert-gpx.mjs"
   },
   "dependencies": {
     "firebase": "^11.10.0",

@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a pig shape.",
   "asset": {
-    "geoJson": "src/assets/My_Fat_Little_.geojson",
-    "metadata": "src/assets/My_Fat_Little_-metadata.json"
+    "geoJson": "data/my-fat-little/converted/overlay.geojson",
+    "metadata": "data/my-fat-little/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#DB2777",

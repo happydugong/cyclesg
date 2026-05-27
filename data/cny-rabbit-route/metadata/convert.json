@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-26T17:56:07.636Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "cny-rabbit-route",
+      "name": "Rabbit",
+      "sourcePath": "/Users/huishun/Desktop/cyclesg/data/cny-rabbit-route/raw/source.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0
+    }
+  ]
+}

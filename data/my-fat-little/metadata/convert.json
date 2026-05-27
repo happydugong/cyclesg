@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-26T17:56:13.949Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "my-fat-little",
+      "name": "Pig",
+      "sourcePath": "/Users/huishun/Desktop/cyclesg/data/my-fat-little/raw/source.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0
+    }
+  ]
+}

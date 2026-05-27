@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-26T17:56:18.316Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "santa-claus-ride",
+      "name": "Santa Claus",
+      "sourcePath": "/Users/huishun/Desktop/cyclesg/data/santa-claus-ride/raw/source.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0
+    }
+  ]
+}

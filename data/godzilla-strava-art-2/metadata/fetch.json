@@ -1,0 +1,7 @@
+{
+  "sourceId": "godzilla-strava-art-2",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/godzilla-strava-art-2/raw/source.gpx",
+  "importedAt": null
+}

@@ -1,0 +1,10 @@
+{
+  "sourceId": "official-rail-station",
+  "sourceKind": "data-gov-sg",
+  "featureAdapter": "rail-station",
+  "convertedAt": "2026-05-26T17:55:46.890Z",
+  "rawPath": "data/official-rail-station/raw/source.geojson",
+  "featureCount": 257,
+  "lineCount": 0,
+  "pointCount": 257
+}

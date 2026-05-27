@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces baby and mummy T-Rex shapes.",
   "asset": {
-    "geoJson": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_.geojson",
-    "metadata": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_-metadata.json"
+    "geoJson": "data/rawrsome-ride-baby-d-mommy-d/converted/overlay.geojson",
+    "metadata": "data/rawrsome-ride-baby-d-mommy-d/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#16A34A",

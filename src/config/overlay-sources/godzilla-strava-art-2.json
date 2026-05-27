@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a Godzilla shape.",
   "asset": {
-    "geoJson": "src/assets/Godzilla_Strava_Art_2.geojson",
-    "metadata": "src/assets/Godzilla_Strava_Art_2-metadata.json"
+    "geoJson": "data/godzilla-strava-art-2/converted/overlay.geojson",
+    "metadata": "data/godzilla-strava-art-2/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#7C3AED",

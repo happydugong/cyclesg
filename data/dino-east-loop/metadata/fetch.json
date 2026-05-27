@@ -1,0 +1,7 @@
+{
+  "sourceId": "dino-east-loop",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/dino-east-loop/raw/source.gpx",
+  "importedAt": null
+}

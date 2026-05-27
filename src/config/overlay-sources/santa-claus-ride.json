@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a Santa Claus shape.",
   "asset": {
-    "geoJson": "src/assets/Santa_Claus_Ride.geojson",
-    "metadata": "src/assets/Santa_Claus_Ride-metadata.json"
+    "geoJson": "data/santa-claus-ride/converted/overlay.geojson",
+    "metadata": "data/santa-claus-ride/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#DC2626",

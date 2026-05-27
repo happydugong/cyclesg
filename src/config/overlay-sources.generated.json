@@ -7,8 +7,8 @@
     "defaultVisible": false,
     "description": "Route that traces a rabbit shape.",
     "asset": {
-      "geoJson": "src/assets/cny-rabbit-route.geojson",
-      "metadata": "src/assets/cny-rabbit-route-metadata.json"
+      "geoJson": "data/cny-rabbit-route/converted/overlay.geojson",
+      "metadata": "data/cny-rabbit-route/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#EA580C",
@@ -41,8 +41,8 @@
     "defaultVisible": false,
     "description": "Route that traces a crocodile shape.",
     "asset": {
-      "geoJson": "src/assets/Crocodile_Ride.geojson",
-      "metadata": "src/assets/Crocodile_Ride-metadata.json"
+      "geoJson": "data/crocodile-ride/converted/overlay.geojson",
+      "metadata": "data/crocodile-ride/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#15803D",
@@ -75,8 +75,8 @@
     "defaultVisible": false,
     "description": "Route that traces a T-Rex shape.",
     "asset": {
-      "geoJson": "src/assets/Dino East Loop.geojson",
-      "metadata": "src/assets/Dino East Loop-metadata.json"
+      "geoJson": "data/dino-east-loop/converted/overlay.geojson",
+      "metadata": "data/dino-east-loop/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#2563EB",
@@ -109,8 +109,8 @@
     "defaultVisible": false,
     "description": "Route that traces a Godzilla shape.",
     "asset": {
-      "geoJson": "src/assets/Godzilla_Strava_Art_2.geojson",
-      "metadata": "src/assets/Godzilla_Strava_Art_2-metadata.json"
+      "geoJson": "data/godzilla-strava-art-2/converted/overlay.geojson",
+      "metadata": "data/godzilla-strava-art-2/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#7C3AED",
@@ -143,8 +143,8 @@
     "defaultVisible": false,
     "description": "Route that traces a seahorse shape.",
     "asset": {
-      "geoJson": "src/assets/Group_drawing_for_Sea_horse_.geojson",
-      "metadata": "src/assets/Group_drawing_for_Sea_horse_-metadata.json"
+      "geoJson": "data/group-drawing-for-sea-horse/converted/overlay.geojson",
+      "metadata": "data/group-drawing-for-sea-horse/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#0F766E",
@@ -177,8 +177,8 @@
     "defaultVisible": false,
     "description": "Jonathan's New PCN on Bikes Google My Maps layer.",
     "asset": {
-      "geoJson": "src/assets/curated-routes.geojson",
-      "metadata": "src/assets/curated-routes-metadata.json"
+      "geoJson": "data/jonathan-route/converted/overlay.geojson",
+      "metadata": "data/jonathan-route/metadata/convert.json"
     },
     "sync": {
       "sourceUrl": "https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1"
@@ -272,8 +272,8 @@
     "defaultVisible": false,
     "description": "Route that traces a Merlion's Head silhouette.",
     "asset": {
-      "geoJson": "src/assets/Lion_Head_Ride.geojson",
-      "metadata": "src/assets/Lion_Head_Ride-metadata.json"
+      "geoJson": "data/lion-head-ride/converted/overlay.geojson",
+      "metadata": "data/lion-head-ride/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#CA8A04",
@@ -306,8 +306,8 @@
     "defaultVisible": false,
     "description": "Route that traces a pig shape.",
     "asset": {
-      "geoJson": "src/assets/My_Fat_Little_.geojson",
-      "metadata": "src/assets/My_Fat_Little_-metadata.json"
+      "geoJson": "data/my-fat-little/converted/overlay.geojson",
+      "metadata": "data/my-fat-little/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#DB2777",
@@ -340,8 +340,8 @@
     "defaultVisible": true,
     "description": "Official LTA cycling path routes.",
     "asset": {
-      "geoJson": "src/assets/cycling-paths.geojson",
-      "metadata": "src/assets/cycling-paths-metadata.json"
+      "geoJson": "data/official-cycling-path/converted/overlay.geojson",
+      "metadata": "data/official-cycling-path/metadata/convert.json"
     },
     "sync": {
       "datasetId": "d_8f468b25193f64be8a16fa7d8f60f553",
@@ -364,8 +364,8 @@
     "defaultVisible": true,
     "description": "Official NParks park connector routes.",
     "asset": {
-      "geoJson": "src/assets/pcn.geojson",
-      "metadata": "src/assets/pcn-metadata.json"
+      "geoJson": "data/official-pcn/converted/overlay.geojson",
+      "metadata": "data/official-pcn/metadata/convert.json"
     },
     "sync": {
       "datasetId": "d_a69ef89737379f231d2ae93fd1c5707f",
@@ -388,8 +388,8 @@
     "defaultVisible": true,
     "description": "Official URA Master Plan 2019 MRT/LRT station outlines shown as station markers.",
     "asset": {
-      "geoJson": "src/assets/rail-stations.geojson",
-      "metadata": "src/assets/rail-stations-metadata.json"
+      "geoJson": "data/official-rail-station/converted/overlay.geojson",
+      "metadata": "data/official-rail-station/metadata/convert.json"
     },
     "sync": {
       "datasetId": "d_8d886e3a83934d7447acdf5bc6959999",
@@ -412,8 +412,8 @@
     "defaultVisible": false,
     "description": "Route that traces baby and mummy T-Rex shapes.",
     "asset": {
-      "geoJson": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_.geojson",
-      "metadata": "src/assets/Rawrsome_ride_Baby_D_Mommy_D_-metadata.json"
+      "geoJson": "data/rawrsome-ride-baby-d-mommy-d/converted/overlay.geojson",
+      "metadata": "data/rawrsome-ride-baby-d-mommy-d/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#16A34A",
@@ -446,8 +446,8 @@
     "defaultVisible": false,
     "description": "Route that traces a Santa Claus shape.",
     "asset": {
-      "geoJson": "src/assets/Santa_Claus_Ride.geojson",
-      "metadata": "src/assets/Santa_Claus_Ride-metadata.json"
+      "geoJson": "data/santa-claus-ride/converted/overlay.geojson",
+      "metadata": "data/santa-claus-ride/metadata/convert.json"
     },
     "presentation": {
       "routeColor": "#DC2626",

@@ -1,0 +1,7 @@
+{
+  "sourceId": "group-drawing-for-sea-horse",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/group-drawing-for-sea-horse/raw/source.gpx",
+  "importedAt": null
+}

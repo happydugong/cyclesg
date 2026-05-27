@@ -1,6 +1,16 @@
-import type { PcnGeoJson } from '../../types/pcn';
+import type { FeatureCollection, LineString, MultiLineString } from 'geojson';
 
-export const pcnFixture: PcnGeoJson = {
+type PcnFixtureProperties = {
+  OBJECTID: number;
+  PARK: string;
+  PCN_LOOP: string;
+  MORE_INFO: string;
+  INC_CRC: string;
+  FMEL_UPD_D: string;
+  'SHAPE.LEN': number;
+};
+
+export const pcnFixture: FeatureCollection<LineString | MultiLineString, PcnFixtureProperties> = {
   type: 'FeatureCollection',
   features: [
     {

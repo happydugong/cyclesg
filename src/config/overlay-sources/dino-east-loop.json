@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a T-Rex shape.",
   "asset": {
-    "geoJson": "src/assets/Dino East Loop.geojson",
-    "metadata": "src/assets/Dino East Loop-metadata.json"
+    "geoJson": "data/dino-east-loop/converted/overlay.geojson",
+    "metadata": "data/dino-east-loop/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#2563EB",

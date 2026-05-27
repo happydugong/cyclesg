@@ -1,0 +1,17 @@
+{
+  "sourceLabel": "gpx",
+  "syncedAt": "2026-05-26T17:56:11.411Z",
+  "featureCount": 1,
+  "lineCount": 1,
+  "pointCount": 0,
+  "overlays": [
+    {
+      "id": "group-drawing-for-sea-horse",
+      "name": "Seahorse",
+      "sourcePath": "/Users/huishun/Desktop/cyclesg/data/group-drawing-for-sea-horse/raw/source.gpx",
+      "featureCount": 1,
+      "lineCount": 1,
+      "pointCount": 0
+    }
+  ]
+}

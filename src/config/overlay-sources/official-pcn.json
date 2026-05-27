@@ -6,8 +6,8 @@
   "defaultVisible": true,
   "description": "Official NParks park connector routes.",
   "asset": {
-    "geoJson": "src/assets/pcn.geojson",
-    "metadata": "src/assets/pcn-metadata.json"
+    "geoJson": "data/official-pcn/converted/overlay.geojson",
+    "metadata": "data/official-pcn/metadata/convert.json"
   },
   "sync": {
     "datasetId": "d_a69ef89737379f231d2ae93fd1c5707f",

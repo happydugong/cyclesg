@@ -6,8 +6,8 @@
   "defaultVisible": true,
   "description": "Official LTA cycling path routes.",
   "asset": {
-    "geoJson": "src/assets/cycling-paths.geojson",
-    "metadata": "src/assets/cycling-paths-metadata.json"
+    "geoJson": "data/official-cycling-path/converted/overlay.geojson",
+    "metadata": "data/official-cycling-path/metadata/convert.json"
   },
   "sync": {
     "datasetId": "d_8f468b25193f64be8a16fa7d8f60f553",

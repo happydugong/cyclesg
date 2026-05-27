@@ -1,0 +1,10 @@
+{
+  "sourceId": "jonathan-route",
+  "sourceKind": "google-my-maps",
+  "featureAdapter": "my-maps",
+  "convertedAt": "2026-05-26T17:56:09.185Z",
+  "rawPath": "data/jonathan-route/raw/source.kml",
+  "featureCount": 1236,
+  "lineCount": 674,
+  "pointCount": 562
+}

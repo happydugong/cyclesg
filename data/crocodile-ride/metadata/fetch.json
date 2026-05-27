@@ -1,0 +1,7 @@
+{
+  "sourceId": "crocodile-ride",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/crocodile-ride/raw/source.gpx",
+  "importedAt": null
+}

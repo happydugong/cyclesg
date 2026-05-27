@@ -1,0 +1,12 @@
+{
+  "sourceId": "official-rail-station",
+  "sourceKind": "data-gov-sg",
+  "featureAdapter": "rail-station",
+  "datasetId": "d_8d886e3a83934d7447acdf5bc6959999",
+  "datasetTitle": "Master Plan 2019 Rail Station layer (GEOJSON)",
+  "agency": "URA",
+  "datasetPageUrl": "https://data.gov.sg/datasets/d_8d886e3a83934d7447acdf5bc6959999/view",
+  "downloadUrl": "https://s3.ap-southeast-1.amazonaws.com/blobs.data.gov.sg/d_8d886e3a83934d7447acdf5bc6959999.geojson?AWSAccessKeyId=ASIAU7LWPY2WKL3DMUB3&Expires=1779821821&Signature=6VXw7vBwiDFA8Gkyx8GADGUjXf8%3D&X-Amzn-Trace-Id=Root%3D1-6a15deec-183c508f5eed53cd6a7bcd00%3BParent%3D5135db5d26fcc798%3BSampled%3D0%3BLineage%3D1%3Affb76583%3A0&response-content-disposition=attachment%3B%20filename%3D%22MasterPlan2019RailStationlayerGEOJSON.geojson%22&x-amz-security-token=IQoJb3JpZ2luX2VjELr%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDmFwLXNvdXRoZWFzdC0xIkcwRQIhALJSulz8ZldFQFsFllwuryRzAEIb%2BVaqCWseR4ROT0bxAiBcYm73810mXfWBXdAgTenakc6VxpP7JlPp8yBjFGmYNirEBAiD%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAQaDDM0MjIzNTI2ODc4MCIMeXfQsKsQM4psLqY8KpgEg3gDNGQ%2Br%2BsuqtREzs9CGe3ynRnC02JM4%2BqGMz7Am%2BGViaTc4ji39VjkS1JmakXy49wI5L%2Bjm9CXxemqAVy6ICKsfTj4Dh4QJwnnO%2FCyNCEyO%2FKUqdqcyxSeZTBTBrf2%2BF5LQ6Z9QW1pPqNulKWobEykKGXlhUQ%2BFdO8xIaIpMTwGxub3a9OsEy7A3A92Z0y4G3TJCOg%2FD3JIJV28YJGVdc3AewwisLfLdko123Hwx5HeeIPPam%2Fu3gL4DVLKXDc2ZyBEuIxT8ZOZGJOIXpn1CH%2BjcS1R5N1BG3SlWM99hsaMR3ifwMfAqVZIDWK4A6D19YNPtqMsDqSzIn3eUkQ6AX5WyustEVyEwXFeByuWh9xlOqplCNP9SxCE0rLU8uuKu9kolyaEgqjwP8GS3XXuVWq85nCpsYQDSpEtwU3sMH8r%2Ft8t6nmAjOQZwVA8gZSkrW03tMyy2AExVS2%2FHs24S6m72nGArTrpk34A6Lh%2Fw7C1W7Ztk%2FEvqmj06FEScR3Npf9BUehGaGE%2BLTBZZ%2BfLSKn5z6TnJeSe8FPBxZsBIIt7bd31gk1oZtyi9HCANJ%2FxIPQ5WjY1vT9Jxp6F3DHkIC2VlGUlyBWTEbD%2BB94TKMrmrs%2F5XEHkTf32Ie0b8HkJgRicYYCyo5IFF9WhaFr4AcEssveLs0OKQw67krU7mdDokXPEIvqwXhDwd2d9Ld8Q3tqQrcPzcUwsLPX0AY6ogF3tkvyDmLAZCHBO6v7QU74PpeupuS4QOWXiQB5OuaWFas0Q0Kf8LpC5VSw2PbI2hdEUyD7tgKkhPvnOD0OlJtVYga5TXRD%2B06E71PSyn57gjalz75HD8XiP2i%2Fd61aNpirxmj1EOMUZIB3YyIJC7Co2GjdMQgI7foQRwkmFwXyT5PzOKv%2B8eoSgg4W7HhZZ4xEnb0StQ00IoIbwbCSOxpXmB0%3D",
+  "fetchedAt": "2026-05-26T17:57:01.069Z",
+  "rawPath": "data/official-rail-station/raw/source.geojson"
+}

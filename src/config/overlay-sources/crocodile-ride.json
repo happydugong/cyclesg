@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a crocodile shape.",
   "asset": {
-    "geoJson": "src/assets/Crocodile_Ride.geojson",
-    "metadata": "src/assets/Crocodile_Ride-metadata.json"
+    "geoJson": "data/crocodile-ride/converted/overlay.geojson",
+    "metadata": "data/crocodile-ride/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#15803D",

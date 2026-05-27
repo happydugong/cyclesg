@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a rabbit shape.",
   "asset": {
-    "geoJson": "src/assets/cny-rabbit-route.geojson",
-    "metadata": "src/assets/cny-rabbit-route-metadata.json"
+    "geoJson": "data/cny-rabbit-route/converted/overlay.geojson",
+    "metadata": "data/cny-rabbit-route/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#EA580C",

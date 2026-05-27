@@ -1,17 +1,19 @@
 import type { CuratedRoutesGeoJson } from '../../types/curatedRoutes';
 
-const geoJsonAssetUrls = import.meta.glob('../../assets/*.geojson', {
+const geoJsonAssetUrls = import.meta.glob(['../../assets/*.geojson', '../../../data/**/converted/*.geojson'], {
   query: '?url',
   import: 'default',
   eager: true
 }) as Record<string, string>;
 
 function resolveGeoJsonAssetUrl(assetPath: string) {
-  const relativeAssetPath = assetPath.replace(/^src\//, '../../');
+  const relativeAssetPath = assetPath
+    .replace(/^src\//, '../../')
+    .replace(/^data\//, '../../../data/');
   const url = geoJsonAssetUrls[relativeAssetPath];
 
   if (!url) {
-    throw new Error(`Unsupported curated routes asset path: ${assetPath}`);
+    throw new Error(`Unsupported overlay asset path: ${assetPath}`);
   }
 
   return url;

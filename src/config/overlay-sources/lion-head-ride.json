@@ -6,8 +6,8 @@
   "defaultVisible": false,
   "description": "Route that traces a Merlion's Head silhouette.",
   "asset": {
-    "geoJson": "src/assets/Lion_Head_Ride.geojson",
-    "metadata": "src/assets/Lion_Head_Ride-metadata.json"
+    "geoJson": "data/lion-head-ride/converted/overlay.geojson",
+    "metadata": "data/lion-head-ride/metadata/convert.json"
   },
   "presentation": {
     "routeColor": "#CA8A04",

@@ -1,11 +1,17 @@
-import type { FeatureCollection, LineString, Point } from 'geojson';
+import type { FeatureCollection, LineString, MultiLineString, Point } from 'geojson';
 import type { UnifiedRouteProperties } from './routes';
 
 export interface CuratedRoutesProperties {
   featureId: string;
+  routeId: string;
   overlayId: string;
   overlayName: string;
   sourceType: 'google-my-maps' | 'gpx' | 'data-gov-sg';
+  routeType: UnifiedRouteProperties['routeType'];
+  routeSource: UnifiedRouteProperties['routeSource'];
+  routeName: string;
+  routeGroup: string;
+  routeLength: number | string | null;
   name: string;
   description: string | null;
   layerName: string | null;
@@ -15,11 +21,9 @@ export interface CuratedRoutesProperties {
   iconHref: string | null;
   poiIconHref?: string | null;
   poiIconId?: string | null;
-  routeLength?: number | string | null;
   strokeColor: string | null;
   strokeWidth: number | null;
-  routeType?: UnifiedRouteProperties['routeType'];
-  routeSource?: UnifiedRouteProperties['routeSource'];
+  overlayLayerId?: string | null;
 }
 
 export type OverlayPoiProperties = CuratedRoutesProperties &
@@ -32,6 +36,6 @@ export function isOverlayPoiProperties(
 }
 
 export type CuratedRoutesGeoJson = FeatureCollection<
-  Point | LineString,
+  Point | LineString | MultiLineString,
   CuratedRoutesProperties
 >;

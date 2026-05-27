@@ -15,7 +15,7 @@ describe('loadCuratedRoutesGeoJson', () => {
       })
     );
 
-    const result = await loadCuratedRoutesGeoJson();
+    const result = await loadCuratedRoutesGeoJson('data/jonathan-route/converted/overlay.geojson');
 
     expect(fetchSpy).toHaveBeenCalledOnce();
     expect(result).toEqual(curatedRoutesFixture);
@@ -29,6 +29,8 @@ describe('loadCuratedRoutesGeoJson', () => {
       })
     );
 
-    await expect(loadCuratedRoutesGeoJson()).rejects.toThrow('Failed to load curated routes data: 502');
+    await expect(
+      loadCuratedRoutesGeoJson('data/jonathan-route/converted/overlay.geojson')
+    ).rejects.toThrow('Failed to load curated routes data: 502');
   });
 });

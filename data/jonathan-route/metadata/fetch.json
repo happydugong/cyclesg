@@ -1,0 +1,8 @@
+{
+  "sourceId": "jonathan-route",
+  "sourceKind": "google-my-maps",
+  "featureAdapter": "my-maps",
+  "sourceUrl": "https://www.google.com/maps/d/kml?mid=1d-f3wTmqM3jmT7C1LtTzorsRbGw&forcekml=1",
+  "fetchedAt": "2026-05-26T17:55:42.163Z",
+  "rawPath": "data/jonathan-route/raw/source.kml"
+}

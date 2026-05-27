@@ -1,0 +1,7 @@
+{
+  "sourceId": "cny-rabbit-route",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/cny-rabbit-route/raw/source.gpx",
+  "importedAt": null
+}

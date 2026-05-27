@@ -179,18 +179,26 @@ Setup details, security rules, and deployment variables are documented in [docs/
 - The app loads GeoJSON through a small service abstraction so the asset is parsed explicitly instead of imported as executable code.
 - The curated overlay preserves source layer and styling metadata where available, but app rendering uses its own presentation.
 
-## PCN sync
+## Official overlay sync
 
-- The repo includes a sync script at `scripts/sync-pcn.mjs`
-- Run it locally with:
+- Official overlays now use a two-step pipeline under `data/<source-id>/`
+- Fetch raw official datasets with:
 
 ```bash
-pnpm sync:pcn
+pnpm overlay:fetch:data-gov
 ```
 
-- The script fetches the official NParks dataset, validates the GeoJSON, rewrites `src/assets/pcn.geojson`, and updates `src/assets/pcn-metadata.json`
-- A GitHub Actions workflow at `.github/workflows/sync-pcn.yml` runs weekly by default every Monday at `03:15 UTC`
-- You can also trigger the workflow manually from GitHub via `workflow_dispatch`
+- Convert the raw datasets into app-facing overlay GeoJSON with:
+
+```bash
+pnpm overlay:convert:data-gov
+```
+
+- Regenerate the combined overlay source config with:
+
+```bash
+pnpm generate:overlay-sources
+```
 
 ### Why git-backed sync instead of object storage
 
@@ -200,16 +208,26 @@ pnpm sync:pcn
 - Weekly sync is a better default than daily if git is the persistence layer
 - If the file grows substantially or update frequency increases, move the dataset out of git and into a storage bucket or backend cache
 
-## Curated Routes sync
+## Curated overlay sync
 
-- The repo includes a curated overlay sync script at `scripts/my-maps-sync.mjs`
-- Run it locally with:
+- Google My Maps overlays now use separate fetch and convert steps:
 
 ```bash
-pnpm sync:my-maps-overlays
+pnpm overlay:fetch:my-maps
+pnpm overlay:convert:my-maps
 ```
 
-- The script reads the source records in `src/config/overlay-sources/`, filters Google My Maps source entries, fetches each public Google My Maps KML/KMZ export, converts route lines and pins into a combined GeoJSON, rewrites `src/assets/curated-routes.geojson`, and updates `src/assets/curated-routes-metadata.json`
+- Repo-backed GPX overlays convert from `data/<source-id>/raw/source.gpx` with:
+
+```bash
+pnpm overlay:convert:gpx
+```
+
+- Every source writes:
+  - raw source data to `data/<source-id>/raw/`
+  - converted app-facing GeoJSON to `data/<source-id>/converted/overlay.geojson`
+  - fetch/convert metadata to `data/<source-id>/metadata/`
+
 - Regenerate the runtime overlay config with `pnpm generate:overlay-sources` after adding or editing overlay source records
 - A separate GitHub Actions workflow at `.github/workflows/refresh-google-my-maps-data.yml` supports manual refresh through `workflow_dispatch` only
 - Overlay source record merges trigger `.github/workflows/build-overlay-files-pr.yml`, which opens a second PR with generated files instead of pushing directly to `main`

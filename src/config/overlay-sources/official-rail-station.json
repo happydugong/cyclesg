@@ -6,8 +6,8 @@
   "defaultVisible": true,
   "description": "Official URA Master Plan 2019 MRT/LRT station outlines shown as station markers.",
   "asset": {
-    "geoJson": "src/assets/rail-stations.geojson",
-    "metadata": "src/assets/rail-stations-metadata.json"
+    "geoJson": "data/official-rail-station/converted/overlay.geojson",
+    "metadata": "data/official-rail-station/metadata/convert.json"
   },
   "sync": {
     "datasetId": "d_8d886e3a83934d7447acdf5bc6959999",

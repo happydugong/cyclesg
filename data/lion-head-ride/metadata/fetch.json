@@ -1,0 +1,7 @@
+{
+  "sourceId": "lion-head-ride",
+  "sourceKind": "local-file",
+  "featureAdapter": "strava-gpx",
+  "sourcePath": "data/lion-head-ride/raw/source.gpx",
+  "importedAt": null
+}
