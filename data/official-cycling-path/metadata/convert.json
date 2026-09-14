@@ -2,7 +2,7 @@
   "sourceId": "official-cycling-path",
   "sourceKind": "data-gov-sg",
   "featureAdapter": "cycling-path",
-  "convertedAt": "2026-09-07T08:12:54.461Z",
+  "convertedAt": "2026-09-14T08:49:35.838Z",
   "rawPath": "data/official-cycling-path/raw/source.geojson",
   "featureCount": 8523,
   "lineCount": 8523,
