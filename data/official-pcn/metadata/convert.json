@@ -2,7 +2,7 @@
   "sourceId": "official-pcn",
   "sourceKind": "data-gov-sg",
   "featureAdapter": "pcn",
-  "convertedAt": "2026-09-21T08:51:08.892Z",
+  "convertedAt": "2026-09-28T09:40:08.070Z",
   "rawPath": "data/official-pcn/raw/source.geojson",
   "featureCount": 878,
   "lineCount": 878,
